@@ -1,21 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
-import PermissionGuard from "../../../../components/auth/permissionGuard";
-import { useHelperCard } from "../../../../components/context/helperCardContext";
-import { Select } from "../../../../components/ui/select";
+import PermissionGuard from "@components/auth/permissionGuard";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { Select } from "@components/ui/select";
+import { FormQuestion } from "@customTypes/forms/formCreation";
 import {
   questionOptionTypesFormatter,
   questionResponseCharacterTypesFormatter,
   questionTypesFormatter,
-} from "../../../../lib/enumsFormatation";
+} from "@lib/enumsFormatation";
 import {
   FetchedCategories,
-  fetchCategories,
-} from "../../../../serverActions/categoryUtil";
-import { searchQuestionsByCategoryAndSubcategory } from "../../../../serverActions/questionUtil";
-import { DisplayQuestion } from "../forms/[formId]/edit/client";
+  _fetchCategories,
+} from "@serverActions/categoryServerActions";
+import { _searchQuestionsByCategoryAndSubcategory } from "@serverActions/questionUtil";
+import { useCallback, useEffect, useState } from "react";
+
 import { CategoryCreationModal } from "./categoryCreationModal";
 import { CategoryDeletionModal } from "./categoryDeletionModal";
 import { QuestionCreationModal } from "./questionCreationModal";
@@ -48,9 +48,9 @@ const QuestionsPage = () => {
     subcategoryId: undefined,
     verifySubcategoryNullness: true,
   });
-  const [questions, setQuestions] = useState<DisplayQuestion[]>([]);
+  const [questions, setQuestions] = useState<FormQuestion[]>([]);
   const handleCategoriesFetch = useCallback(async () => {
-    const catObj = await fetchCategories();
+    const catObj = await _fetchCategories();
     if (catObj.statusCode === 401) {
       setHelperCard({
         show: true,
@@ -123,7 +123,7 @@ const QuestionsPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       if (selectedCategoryAndSubcategoryId) {
-        const questions = await searchQuestionsByCategoryAndSubcategory(
+        const questions = await _searchQuestionsByCategoryAndSubcategory(
           selectedCategoryAndSubcategoryId.categoryId,
           selectedCategoryAndSubcategoryId?.subcategoryId,
           selectedCategoryAndSubcategoryId.verifySubcategoryNullness,

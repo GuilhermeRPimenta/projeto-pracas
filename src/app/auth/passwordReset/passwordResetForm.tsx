@@ -1,5 +1,10 @@
 "use client";
 
+import LoadingIcon from "@components/LoadingIcon";
+import { Button } from "@components/button";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { Input } from "@components/ui/input";
+import { _resetPassword } from "@serverActions/passwordResetUtil";
 import {
   IconEye,
   IconEyeClosed,
@@ -8,12 +13,6 @@ import {
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
-
-import LoadingIcon from "../../../components/LoadingIcon";
-import { Button } from "../../../components/button";
-import { useHelperCard } from "../../../components/context/helperCardContext";
-import { Input } from "../../../components/ui/input";
-import { resetPassword } from "../../../serverActions/passwordResetUtil";
 
 const PasswordResetForm = ({
   token,
@@ -24,7 +23,7 @@ const PasswordResetForm = ({
 }) => {
   const { setHelperCard } = useHelperCard();
   const router = useRouter();
-  const [state, formAction, isPending] = useActionState(resetPassword, null);
+  const [state, formAction, isPending] = useActionState(_resetPassword, null);
   const [showPasswords, setShowPasswords] = useState({
     password: false,
     confirmPassword: false,

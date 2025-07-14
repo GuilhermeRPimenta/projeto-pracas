@@ -1,13 +1,17 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { TallyDataFetchedToTallyList } from "@/components/singleUse/admin/tallys/tallyListPage";
 import { Checkbox } from "@/components/ui/checkbox";
+import LoadingIcon from "@components/LoadingIcon";
+import PermissionGuard from "@components/auth/permissionGuard";
+import { useUserContext } from "@components/context/UserContext";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { TallyDataFetchedToTallyList } from "@customTypes/tallys/tallyList";
 import {
   LocationAssessment,
-  fetchAssessmentsByLocation,
-} from "@/serverActions/assessmentUtil";
-import { fetchTallysByLocationId } from "@/serverActions/tallyUtil";
+  _fetchAssessmentsByLocation,
+} from "@serverActions/assessmentUtil";
+import { _fetchTallysByLocationId } from "@serverActions/tallyUtil";
 import {
   IconArrowBackUp,
   IconArrowBackUpDouble,
@@ -19,10 +23,6 @@ import {
 import { useEffect, useState } from "react";
 import React from "react";
 
-import LoadingIcon from "../../../components/LoadingIcon";
-import PermissionGuard from "../../../components/auth/permissionGuard";
-import { useUserContext } from "../../../components/context/UserContext";
-import { useHelperCard } from "../../../components/context/helperCardContext";
 import {
   ExportPageModes,
   SelectedLocationObj,
@@ -80,7 +80,7 @@ const EditPage = ({
   useEffect(() => {
     if (currentLocationId) {
       const fetchTallys = async () => {
-        const response = await fetchTallysByLocationId(currentLocationId);
+        const response = await _fetchTallysByLocationId(currentLocationId);
         if (response.statusCode === 401) {
           setHelperCard({
             show: true,
@@ -98,7 +98,7 @@ const EditPage = ({
         setFetchedTallysStatus("LOADED");
       };
       const fetchAssessments = async () => {
-        const response = await fetchAssessmentsByLocation(currentLocationId);
+        const response = await _fetchAssessmentsByLocation(currentLocationId);
         if (response.statusCode === 401) {
           if (response.statusCode === 401) {
             setHelperCard({

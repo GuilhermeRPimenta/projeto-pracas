@@ -2,18 +2,17 @@
 
 import LoadingIcon from "@components/LoadingIcon";
 import { Button } from "@components/button";
+import { useHelperCard } from "@components/context/helperCardContext";
 import GoogleLoginButton from "@components/singleUse/auth/googleLoginButton";
+import ButtonLink from "@components/ui/buttonLink";
 import { Input } from "@components/ui/input";
+import _login from "@serverActions/login";
 import { IconTree } from "@tabler/icons-react";
 import { useActionState, useEffect } from "react";
 
-import { useHelperCard } from "../../../components/context/helperCardContext";
-import ButtonLink from "../../../components/ui/buttonLink";
-import login from "../../../serverActions/login";
-
 const LoginForm = ({ enableGoogleLogin }: { enableGoogleLogin: boolean }) => {
   const { setHelperCard } = useHelperCard();
-  const [state, formAction, isPending] = useActionState(login, null);
+  const [state, formAction, isPending] = useActionState(_login, null);
   useEffect(() => {
     if (!state) return;
     setHelperCard({

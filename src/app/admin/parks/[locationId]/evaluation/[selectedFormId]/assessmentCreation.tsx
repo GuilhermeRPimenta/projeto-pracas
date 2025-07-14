@@ -1,23 +1,13 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { createAssessment } from "@/serverActions/assessmentUtil";
+import LoadingIcon from "@components/LoadingIcon";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { AssessmentCreationFormType } from "@customTypes/assessments/assessmentCreation";
+import { _createAssessment } from "@serverActions/assessmentUtil";
 import { useActionState, useEffect } from "react";
 
-import LoadingIcon from "../../../../../../components/LoadingIcon";
-import { useHelperCard } from "../../../../../../components/context/helperCardContext";
 import { CreateAssessmentSubmitButton } from "./createAssessmentSubmitButton";
-
-type AssessmentCreationFormType = {
-  statusCode: number;
-  locationId: string;
-  userId: string;
-  formId: string;
-  startDate: string;
-  errors: {
-    startDate: boolean;
-  };
-};
 
 const AssessmentCreation = ({
   locationId,
@@ -29,7 +19,7 @@ const AssessmentCreation = ({
   const { setHelperCard } = useHelperCard();
   const currentDatetime = new Date();
   const [newAssessmentFormState, newAssessmentFormAction, isPending] =
-    useActionState(createAssessment, {
+    useActionState(_createAssessment, {
       locationId: locationId.toString(),
       formId: formId.toString(),
       startDate: `${currentDatetime.getFullYear()}-${String(currentDatetime.getMonth() + 1).padStart(2, "0")}-${String(currentDatetime.getDate()).padStart(2, "0")}T${String(currentDatetime.getHours()).padStart(2, "0")}:${String(currentDatetime.getMinutes()).padStart(2, "0")}`,
@@ -102,4 +92,3 @@ const AssessmentCreation = ({
 };
 
 export default AssessmentCreation;
-export { type AssessmentCreationFormType };

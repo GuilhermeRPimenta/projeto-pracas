@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/button";
+import LoadingIcon from "@components/LoadingIcon";
 import { useHelperCard } from "@components/context/helperCardContext";
+import { _deleteCategory } from "@serverActions/categoryServerActions";
 import { IconCheck, IconTrash, IconX } from "@tabler/icons-react";
 import { useActionState, useEffect, useState } from "react";
 import {
@@ -10,9 +12,6 @@ import {
   Modal,
   ModalOverlay,
 } from "react-aria-components";
-
-import LoadingIcon from "../../../../components/LoadingIcon";
-import { deleteCategory } from "../../../../serverActions/categoryUtil";
 
 const CategoryDeletionModal = ({
   categoryId,
@@ -24,7 +23,7 @@ const CategoryDeletionModal = ({
   fetchCategoriesAfterDeletion: () => void;
 }) => {
   const { setHelperCard } = useHelperCard();
-  const [state, formAction, isPending] = useActionState(deleteCategory, null);
+  const [state, formAction, isPending] = useActionState(_deleteCategory, null);
   const [pageState, setPageState] = useState<"FORM" | "SUCCESS" | "ERROR">(
     "FORM",
   );

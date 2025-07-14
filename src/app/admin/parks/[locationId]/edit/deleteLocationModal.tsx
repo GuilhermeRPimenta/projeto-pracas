@@ -1,15 +1,14 @@
 "use client";
 
+import { Button } from "@components/button";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { useLoadingOverlay } from "@components/context/loadingContext";
+import CustomModal from "@components/modal/customModal";
+import { _deleteLocation } from "@serverActions/locationUtil";
 import { IconTrash } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DialogTrigger } from "react-aria-components";
-
-import { Button } from "../../../../../components/button";
-import { useHelperCard } from "../../../../../components/context/helperCardContext";
-import { useLoadingOverlay } from "../../../../../components/context/loadingContext";
-import CustomModal from "../../../../../components/modal/customModal";
-import { deleteLocation } from "../../../../../serverActions/locationUtil";
 
 const DeleteLocationModal = ({
   locationId,
@@ -29,7 +28,7 @@ const DeleteLocationModal = ({
   const handleDeleteLocation = async () => {
     setLoadingOverlayVisible(true);
     try {
-      const response = await deleteLocation(locationId);
+      const response = await _deleteLocation(locationId);
       setLocationResponse(response);
       if (response.statusCode === 404) {
         setHelperCard({

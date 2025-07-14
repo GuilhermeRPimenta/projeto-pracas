@@ -1,6 +1,10 @@
 "use client";
 
 import { Button } from "@/components/button";
+import LoadingIcon from "@components/LoadingIcon";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { Input } from "@components/ui/input";
+import { _formSubmit } from "@serverActions/formUtil";
 import { IconCheck, IconCirclePlus, IconX } from "@tabler/icons-react";
 import { useActionState, useEffect, useState } from "react";
 import {
@@ -10,14 +14,9 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 
-import LoadingIcon from "../../../../components/LoadingIcon";
-import { useHelperCard } from "../../../../components/context/helperCardContext";
-import { Input } from "../../../../components/ui/input";
-import { formSubmit } from "../../../../serverActions/formUtil";
-
 const FormCreationModal = () => {
   const { setHelperCard } = useHelperCard();
-  const [state, formAction, isPending] = useActionState(formSubmit, null);
+  const [state, formAction, isPending] = useActionState(_formSubmit, null);
   const [pageState, setPageState] = useState<"FORM" | "SUCCESS" | "ERROR">(
     "FORM",
   );

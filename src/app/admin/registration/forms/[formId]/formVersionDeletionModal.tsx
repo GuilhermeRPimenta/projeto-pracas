@@ -1,6 +1,9 @@
 "use client";
 
 import { Button } from "@/components/button";
+import LoadingIcon from "@components/LoadingIcon";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { _deleteFormVersion } from "@serverActions/formUtil";
 import {
   IconCalendarClock,
   IconCheck,
@@ -18,10 +21,6 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 
-import LoadingIcon from "../../../../../components/LoadingIcon";
-import { useHelperCard } from "../../../../../components/context/helperCardContext";
-import { deleteFormVersion } from "../../../../../serverActions/formUtil";
-
 const FormVersionDeletionModal = ({
   formId,
   formName,
@@ -33,7 +32,7 @@ const FormVersionDeletionModal = ({
 }) => {
   const { setHelperCard } = useHelperCard();
   const [state, formAction, isPending] = useActionState(
-    deleteFormVersion,
+    _deleteFormVersion,
     null,
   );
   const [pageState, setPageState] = useState<"FORM" | "SUCCESS" | "ERROR">(

@@ -1,17 +1,16 @@
 "use client";
 
+import { Button } from "@components/button";
+import { _googleRegister } from "@serverActions/googleLogin";
 import { useState } from "react";
 import { BsGoogle } from "react-icons/bs";
-
-import { googleRegister } from "../../../serverActions/googleLogin";
-import { Button } from "../../button";
 
 const GoogleRegisterButton = ({ inviteToken }: { inviteToken: string }) => {
   const [errorMessageGoogle, setErrorMessageGoogle] = useState<string | null>(
     null,
   );
   const register = async () => {
-    const res = await googleRegister(inviteToken);
+    const res = await _googleRegister(inviteToken);
     if (res) {
       setErrorMessageGoogle(res.message);
     }

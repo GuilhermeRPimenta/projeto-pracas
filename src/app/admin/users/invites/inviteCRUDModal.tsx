@@ -1,16 +1,13 @@
+import LoadingIcon from "@components/LoadingIcon";
+import { Button } from "@components/button";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { Input } from "@components/ui/input";
 import { Role } from "@prisma/client";
+import { _createInvite, _updateInvite } from "@serverActions/inviteUtil";
 import { IconClipboard, IconX } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Dialog, Modal, ModalOverlay } from "react-aria-components";
 
-import LoadingIcon from "../../../../components/LoadingIcon";
-import { Button } from "../../../../components/button";
-import { useHelperCard } from "../../../../components/context/helperCardContext";
-import { Input } from "../../../../components/ui/input";
-import {
-  createInvite,
-  updateInvite,
-} from "../../../../serverActions/inviteUtil";
 import PermissionSelectRow from "../permissionSelectRow";
 import { Invite } from "./invitesClient";
 
@@ -282,7 +279,7 @@ const InviteCRUDModal = ({
     setIsLoading(true);
     try {
       if (!invite) {
-        const inviteReturn = await createInvite(
+        const inviteReturn = await _createInvite(
           newInviteEmail,
           userRoles
             .filter((ur) => ur.role !== null)
@@ -309,7 +306,7 @@ const InviteCRUDModal = ({
           });
         }
       } else {
-        const result = await updateInvite(
+        const result = await _updateInvite(
           invite.token,
           userRoles
             .filter((ur) => ur.role !== null)
@@ -488,7 +485,7 @@ const InviteCRUDModal = ({
                   <Button
                     onPress={() => {
                       void navigator.clipboard.writeText(
-                        `${window.location.origin}/auth/register/?inviteToken=${invite?.token}`,
+                        `${process.env.BASE_URL}/auth/register?inviteToken=${invite?.token}`,
                       );
                       helperCardContext.setHelperCard({
                         show: true,

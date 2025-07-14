@@ -1,6 +1,13 @@
 "use client";
 
 import { Button } from "@/components/button";
+import LoadingIcon from "@components/LoadingIcon";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { Checkbox } from "@components/ui/checkbox";
+import { Input } from "@components/ui/input";
+import { RadioButton } from "@components/ui/radioButton";
+import { Select } from "@components/ui/select";
+import { _questionSubmit } from "@serverActions/questionUtil";
 import {
   IconCheck,
   IconCirclePlus,
@@ -14,14 +21,6 @@ import {
   Modal,
   ModalOverlay,
 } from "react-aria-components";
-
-import LoadingIcon from "../../../../components/LoadingIcon";
-import { useHelperCard } from "../../../../components/context/helperCardContext";
-import { Checkbox } from "../../../../components/ui/checkbox";
-import { Input } from "../../../../components/ui/input";
-import { RadioButton } from "../../../../components/ui/radioButton";
-import { Select } from "../../../../components/ui/select";
-import { questionSubmit } from "../../../../serverActions/questionUtil";
 
 type CharacterType = "text" | "number";
 
@@ -39,7 +38,7 @@ const QuestionCreationModal = ({
   fetchCategoriesAfterCreation: () => void;
 }) => {
   const { setHelperCard } = useHelperCard();
-  const [state, formAction, isPending] = useActionState(questionSubmit, null);
+  const [state, formAction, isPending] = useActionState(_questionSubmit, null);
   const [pageState, setPageState] = useState<"FORM" | "SUCCESS" | "ERROR">(
     "FORM",
   );

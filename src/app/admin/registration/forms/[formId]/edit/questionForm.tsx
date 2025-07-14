@@ -3,23 +3,22 @@
 import { Button } from "@/components/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { CategoriesWithQuestions } from "@/serverActions/categoryUtil";
-import {
-  searchQuestionsByCategoryAndSubcategory,
-  searchQuestionsByStatement,
-} from "@/serverActions/questionUtil";
+import LoadingIcon from "@components/LoadingIcon";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { FormQuestion } from "@customTypes/forms/formCreation";
 import {
   OptionTypes,
   Question,
   QuestionResponseCharacterTypes,
   QuestionTypes,
 } from "@prisma/client";
+import { CategoriesWithQuestions } from "@queries/category";
+import {
+  _searchQuestionsByCategoryAndSubcategory,
+  _searchQuestionsByStatement,
+} from "@serverActions/questionUtil";
 import { IconCirclePlus, IconX } from "@tabler/icons-react";
 import { useDeferredValue, useEffect, useState } from "react";
-
-import LoadingIcon from "../../../../../../components/LoadingIcon";
-import { useHelperCard } from "../../../../../../components/context/helperCardContext";
-import { DisplayQuestion } from "./client";
 
 type SearchMethods = "CATEGORY" | "STATEMENT";
 
@@ -33,9 +32,9 @@ const QuestionForm = ({
 }: {
   formId?: number;
   initialQuestions: Question[] | null;
-  handleQuestionsToAdd: (question: DisplayQuestion) => void;
-  questionsToAdd: DisplayQuestion[];
-  questionsToRemove: DisplayQuestion[];
+  handleQuestionsToAdd: (question: FormQuestion) => void;
+  questionsToAdd: FormQuestion[];
+  questionsToRemove: FormQuestion[];
   categories: CategoriesWithQuestions;
 }) => {
   const { setHelperCard } = useHelperCard();
@@ -47,9 +46,9 @@ const QuestionForm = ({
 
   const [currentSearchMethod, setCurrentSearchMethod] =
     useState<SearchMethods>("CATEGORY");
-  const [foundQuestions, setFoundQuestions] = useState<DisplayQuestion[]>([]);
+  const [foundQuestions, setFoundQuestions] = useState<FormQuestion[]>([]);
   const [foundQuestionsByCategory, setFoundQuestionsByCategory] = useState<
-    DisplayQuestion[]
+    FormQuestion[]
   >([]);
 
   const [
@@ -77,7 +76,7 @@ const QuestionForm = ({
 
   useEffect(() => {
     setQuestionsListState("LOADING");
-    searchQuestionsByStatement(debouncedTargetQuestion)
+    _searchQuestionsByStatement(debouncedTargetQuestion)
       .then((questions) => {
         setQuestionsListState("LOADED");
         setFoundQuestions(questions.questions);
@@ -89,7 +88,11 @@ const QuestionForm = ({
 
   useEffect(() => {
     setQuestionsListState("LOADING");
-    searchQuestionsByCategoryAndSubcategory(categories[0]?.id, undefined, false)
+    _searchQuestionsByCategoryAndSubcategory(
+      categories[0]?.id,
+      undefined,
+      false,
+    )
       .then((questions) => {
         if (questions.statusCode === 200) {
           setQuestionsListState("LOADED");
@@ -124,7 +127,7 @@ const QuestionForm = ({
 
   useEffect(() => {
     setQuestionsListState("LOADING");
-    searchQuestionsByCategoryAndSubcategory(
+    _searchQuestionsByCategoryAndSubcategory(
       selectedCategoryAndSubcategoryId.categoryId,
       selectedCategoryAndSubcategoryId.subcategoryId,
       selectedCategoryAndSubcategoryId.verifySubcategoryNullness,
@@ -308,12 +311,12 @@ const SearchedQuestionList = ({
   questionsToAdd,
   questionsToRemove,
 }: {
-  questions: DisplayQuestion[];
+  questions: FormQuestion[];
   formId?: number;
   initialQuestions: Question[] | null;
-  handleQuestionsToAdd: (question: DisplayQuestion) => void;
-  questionsToAdd: DisplayQuestion[];
-  questionsToRemove: DisplayQuestion[];
+  handleQuestionsToAdd: (question: FormQuestion) => void;
+  questionsToAdd: FormQuestion[];
+  questionsToRemove: FormQuestion[];
 }) => {
   useEffect(() => {}, [questionsToAdd.length, questionsToRemove.length]);
 
@@ -366,12 +369,12 @@ const QuestionList = ({
   questionsToAdd,
   questionsToRemove,
 }: {
-  questions: DisplayQuestion[];
+  questions: FormQuestion[];
   formId?: number;
   initialQuestions: Question[] | null;
-  handleQuestionsToAdd: (question: DisplayQuestion) => void;
-  questionsToAdd: DisplayQuestion[];
-  questionsToRemove: DisplayQuestion[];
+  handleQuestionsToAdd: (question: FormQuestion) => void;
+  questionsToAdd: FormQuestion[];
+  questionsToRemove: FormQuestion[];
 }) => {
   useEffect(() => {}, [questionsToAdd.length, questionsToRemove.length]);
 
@@ -433,7 +436,7 @@ const QuestionComponent = ({
 }: {
   questionId: number;
   characterType: QuestionResponseCharacterTypes;
-  handleQuestionsToAdd: (question: DisplayQuestion) => void;
+  handleQuestionsToAdd: (question: FormQuestion) => void;
   name: string;
   notes: string | null;
   type: QuestionTypes;

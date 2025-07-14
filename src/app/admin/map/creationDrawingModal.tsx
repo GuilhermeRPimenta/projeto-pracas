@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { FetchCitiesType } from "@/serverActions/cityUtil";
+import LocationRegisterForm from "@components/locationForm/locationRegisterForm";
+import { FetchCitiesType } from "@queries/city";
 import { IconX } from "@tabler/icons-react";
 import Feature from "ol/Feature";
 import GeoJSON from "ol/format/GeoJSON";
@@ -13,8 +14,6 @@ import {
   Modal,
   ModalOverlay,
 } from "react-aria-components";
-
-import LocationRegisterForm from "../../../components/locationForm/locationRegisterForm";
 
 const CreationDrawingModal = ({
   features,

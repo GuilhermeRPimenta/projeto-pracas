@@ -1,14 +1,13 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { editLocationPolygon } from "@/serverActions/manageLocations";
+import { useHelperCard } from "@components/context/helperCardContext";
+import { _editLocationPolygon } from "@serverActions/locationUtil";
+import { removePolygon } from "@serverActions/managePolygons";
 import Feature from "ol/Feature";
 import GeoJSON from "ol/format/GeoJSON";
 import { Geometry, MultiPolygon, SimpleGeometry } from "ol/geom";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-
-import { useHelperCard } from "../../../components/context/helperCardContext";
-import { removePolygon } from "../../../serverActions/managePolygons";
 
 const EditPolygonSubmitButton = ({
   id,
@@ -94,7 +93,7 @@ const EditPolygonSubmitButton = ({
               featuresGeoJson.geometry,
             );
             setState("loading");
-            editLocationPolygon(id, featuresGeoJsonStringified)
+            _editLocationPolygon(id, featuresGeoJsonStringified)
               .then((response) => {
                 if (response.statusCode === 201) {
                   setHelperCard({

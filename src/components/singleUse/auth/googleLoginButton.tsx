@@ -1,14 +1,13 @@
 "use client";
 
+import { Button } from "@components/button";
+import { _googleAuthenticate } from "@serverActions/googleLogin";
 import { useActionState } from "react";
 import { BsGoogle } from "react-icons/bs";
 
-import { googleAuthenticate } from "../../../serverActions/googleLogin";
-import { Button } from "../../button";
-
 const GoogleLoginButton = () => {
   const [errorMessageGoogle, dispatchGoogle] = useActionState(
-    googleAuthenticate,
+    _googleAuthenticate,
     undefined,
   );
   return (

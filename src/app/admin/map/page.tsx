@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { fetchCities } from "@/serverActions/cityUtil";
-import { fetchPolygons } from "@/serverActions/managePolygons";
 import { Location } from "@prisma/client";
+import { fetchCities } from "@queries/city";
+import { fetchLocationCategories } from "@queries/locationCategory";
+import { fetchLocationTypes } from "@queries/locationType";
+import { fetchPolygons } from "@queries/polygon";
 
-import { fetchLocationCategories } from "../../../serverActions/locationCategoryUtil";
-import { fetchLocationTypes } from "../../../serverActions/locationTypeUtil";
 import Client from "./client";
 //Polygon provider cannot be imported dynamically, because it creates errors in compiled builds.
 import MapProvider from "./mapProvider";

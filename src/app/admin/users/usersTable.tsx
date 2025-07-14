@@ -1,4 +1,7 @@
+import { Button } from "@components/button";
+import { useUserContext } from "@components/context/UserContext";
 import { Checkbox } from "@components/ui/checkbox";
+import { Input } from "@components/ui/input";
 import {
   IconCheck,
   IconCornerUpLeft,
@@ -14,9 +17,6 @@ import {
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
-import { Button } from "../../../components/button";
-import { useUserContext } from "../../../components/context/UserContext";
-import { Input } from "../../../components/ui/input";
 import DeleteUserModal from "./deleteUserModal";
 import SortMenu from "./orderMenu";
 import PermissionsModal from "./permissionsModal";
@@ -351,4 +351,4 @@ const UsersTable = ({
 };
 
 export default UsersTable;
-export type { Order, OrdersObj, OrderProperty };
+export { type Order, type OrdersObj, type OrderProperty };

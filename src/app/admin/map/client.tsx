@@ -2,12 +2,15 @@
 
 import { Button } from "@/components/button";
 import { search } from "@/lib/search";
-import { FetchCitiesType } from "@/serverActions/cityUtil";
-import { removePolygon } from "@/serverActions/managePolygons";
+import PermissionGuard from "@components/auth/permissionGuard";
+import { useHelperCard } from "@components/context/helperCardContext";
 import { useLoadingOverlay } from "@components/context/loadingContext";
 import CustomModal from "@components/modal/customModal";
+import { Input } from "@components/ui/input";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Location } from "@prisma/client";
+import { FetchCitiesType } from "@queries/city";
+import { removePolygon } from "@serverActions/managePolygons";
 import {
   IconLocationPin,
   IconMapPin,
@@ -26,9 +29,6 @@ import { useContext, useEffect, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Rnd } from "react-rnd";
 
-import PermissionGuard from "../../../components/auth/permissionGuard";
-import { useHelperCard } from "../../../components/context/helperCardContext";
-import { Input } from "../../../components/ui/input";
 import { CreationPanel } from "./creationPanel";
 import { DrawingProvider } from "./drawingProvider";
 import { MapContext } from "./mapProvider";
