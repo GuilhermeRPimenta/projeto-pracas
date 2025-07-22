@@ -6,6 +6,7 @@ import { prisma } from "@lib/prisma";
 import { unstable_cache } from "next/cache";
 
 const fetchPolygons = async () => {
+  //UNUSED
   try {
     const polygons = await prisma.$queryRaw<
       Array<{ st_asgeojson: string; id: number }>
