@@ -101,7 +101,7 @@ const LocationDetails = ({
       </div>
       <Divider />
       <h4 className="font-semibold">Situação cadastral</h4>
-      <CCheckbox checked={location.isPark} label="É praça" />
+      <CCheckbox checked={location.isPark} label="É praça" disabled />
       <CCheckbox
         checked={location.inactiveNotFound}
         label="Inativo ou não encontrado"
