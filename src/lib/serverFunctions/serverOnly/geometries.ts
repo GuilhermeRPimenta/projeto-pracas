@@ -128,21 +128,32 @@ const addPolygon = async (
   if (!parsed.success) {
     return;
   }
-  if (parsed.data.coordinates.length === 0) {
-    return;
-  }
 
   const transaction = tx ?? prisma;
-  try {
-    await transaction.$executeRaw`
+  if (parsed.data.coordinates.length === 0) {
+    try {
+      await transaction.$executeRaw`
+      UPDATE location
+      SET 
+        polygon = ${null},
+        polygon_area = ${0}
+      WHERE id = ${id};
+    `;
+    } catch (e) {
+      throw new Error();
+    }
+  } else {
+    try {
+      await transaction.$executeRaw`
       UPDATE location
       SET 
         polygon = ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(${featuresGeoJson}), 4326)),
         polygon_area = ST_Area(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON(${featuresGeoJson}), 4326), 3857))
       WHERE id = ${id};
     `;
-  } catch (e) {
-    throw new Error();
+    } catch (e) {
+      throw new Error();
+    }
   }
 };
 
