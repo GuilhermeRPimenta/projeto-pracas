@@ -1,6 +1,8 @@
 "use client";
 
-import LocationRegisterDialog from "@/app/admin/map/register/locationRegisterDialog";
+import LocationRegisterDialog, {
+  LocationRegisterDialogRef,
+} from "@/app/admin/map/register/locationRegisterDialog";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
 import { _editLocationPolygon } from "@/lib/serverFunctions/serverActions/locationUtil";
 import { useServerAction } from "@/lib/utils/useServerAction";
@@ -14,7 +16,7 @@ import {
 import Feature from "ol/Feature";
 import GeoJSON from "ol/format/GeoJSON";
 import { Geometry, MultiPolygon, Polygon, SimpleGeometry } from "ol/geom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import CButton from "../../../../components/ui/cButton";
 import { DrawingProvider } from "../drawingProvider";
@@ -37,6 +39,7 @@ const RegisterMenu = ({
   reloadLocationTypes: () => void;
   reloadCities: () => void;
 }) => {
+  const dialogRef = useRef<LocationRegisterDialogRef>(null);
   const [_updateLocationPolygon] = useServerAction({
     action: _editLocationPolygon,
     callbacks: {
@@ -59,6 +62,7 @@ const RegisterMenu = ({
   const [featuresGeoJson, setFeaturesGeoJson] = useState("");
 
   const handleClose = () => {
+    dialogRef.current?.reset();
     setIsDrawingCreation(false);
     setIsCreating(false);
     setFeatures([]);
@@ -208,6 +212,7 @@ const RegisterMenu = ({
         )}
 
         <LocationRegisterDialog
+          ref={dialogRef}
           featuresGeoJson={featuresGeoJson}
           location={isEdition ? locationToEdit : undefined}
           open={openLocationRegisterFormDialog}

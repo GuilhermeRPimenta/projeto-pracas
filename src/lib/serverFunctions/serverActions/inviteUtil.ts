@@ -76,6 +76,7 @@ export const _createInviteV2 = async (params: {
       } as APIResponseInfo,
     };
   }
+
   if (
     params.roles.filter((role) => role).length > 0 &&
     !params.roles.some(
@@ -137,6 +138,12 @@ export const _createInviteV2 = async (params: {
             expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
           },
         });
+        return {
+          responseInfo: {
+            statusCode: 201,
+            message: "Convite criado, mas sem envio de email!",
+          } as APIResponseInfo,
+        };
       }
 
       return {

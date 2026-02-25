@@ -242,7 +242,7 @@ const FeatureList = ({
           </div>
         );
       })}
-      {features.length > 0 && (
+      {(features.length > 0 || isEdition) && (
         <CButton
           onClick={() => {
             if (isEdition) {
@@ -259,7 +259,7 @@ const FeatureList = ({
           {isEdition ? "Salvar e fechar" : "Confirmar"}
         </CButton>
       )}
-      {features.length > 0 && isEdition && (
+      {(features.length > 0 || isEdition) && (
         <CButton
           onClick={() => {
             openRegisterFormDialog();

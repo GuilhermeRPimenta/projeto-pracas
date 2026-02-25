@@ -1,7 +1,13 @@
 "use client";
 
 import OptionalInfoStep from "@/app/admin/map/register/registerSteps/optionalnfoStep";
+import { useFetchCities } from "@/lib/serverFunctions/apiCalls/city";
+import { useFetchLocationCategories } from "@/lib/serverFunctions/apiCalls/locationCategory";
+import { useFetchLocationTypes } from "@/lib/serverFunctions/apiCalls/locationType";
+import { FetchCitiesResponse } from "@/lib/serverFunctions/queries/city";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
+import { FetchLocationCategoriesResponse } from "@/lib/serverFunctions/queries/locationCategory";
+import { FetchLocationTypesResponse } from "@/lib/serverFunctions/queries/locationType";
 import { getImageFromUrl } from "@/lib/utils/image";
 import { useResettableActionState } from "@/lib/utils/useResettableActionState";
 import { LinearProgress, Step, StepLabel, Stepper } from "@mui/material";
@@ -10,7 +16,13 @@ import {
   IconArrowForwardUp,
   IconCheck,
 } from "@tabler/icons-react";
-import { startTransition, useEffect, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 
 import CDialog from "../../../../components/ui/dialog/cDialog";
 import {
@@ -20,6 +32,10 @@ import {
 import { ParkRegisterData } from "../../../../lib/types/parks/parkRegister";
 import AddressStep from "./registerSteps/addressStep";
 import BasicInfoStep from "./registerSteps/basicInfoStep";
+
+export type LocationRegisterDialogRef = {
+  reset: () => void;
+};
 
 const defaultParkData: ParkRegisterData = {
   locationId: null,
@@ -51,6 +67,7 @@ const defaultParkData: ParkRegisterData = {
 const steps = ["", "", ""];
 
 const LocationRegisterDialog = ({
+  ref,
   open,
   location,
   locationId,
@@ -62,6 +79,7 @@ const LocationRegisterDialog = ({
   onFullCreationClose,
   onCloseDialogOnly,
 }: {
+  ref: React.Ref<LocationRegisterDialogRef>;
   open: boolean;
   location?: FetchLocationsResponse["locations"][number] | null;
   locationId?: number;
@@ -82,6 +100,24 @@ const LocationRegisterDialog = ({
   const [shouldReloadLocationTypes, setShouldReloadLocationTypes] =
     useState(false);
   const [shouldReloadCities, setShouldReloadCities] = useState(false);
+  const [locationCategories, setLocationCategories] = useState<
+    FetchLocationCategoriesResponse["categories"]
+  >([]);
+  const [locationTypes, setLocationTypes] = useState<
+    FetchLocationTypesResponse["types"]
+  >([]);
+  const [citiesOptions, setCitiesOptions] = useState<
+    FetchCitiesResponse["cities"] | null
+  >(null);
+  const [adminUnitsSugestions, setAdminUnitsSugestions] = useState<{
+    narrow: string[];
+    intermediate: string[];
+    broad: string[];
+  }>({
+    narrow: [],
+    intermediate: [],
+    broad: [],
+  });
 
   const reset = () => {
     setHasEditedImage(false);
@@ -90,6 +126,9 @@ const LocationRegisterDialog = ({
       setStep(1);
     }
   };
+  useImperativeHandle(ref, () => ({
+    reset,
+  }));
   const handleClose = (isFullCreationClose: boolean) => {
     if (shouldReloadCities) {
       reloadCities();
@@ -110,9 +149,6 @@ const LocationRegisterDialog = ({
         onFullCreationClose();
       }
     } else {
-      if (!location) {
-        reset();
-      }
       onCloseDialogOnly();
     }
   };
@@ -228,6 +264,89 @@ const LocationRegisterDialog = ({
     });
   };
 
+  const [_fetchLocationCategories, loadingCategories] =
+    useFetchLocationCategories({
+      callbacks: {
+        onSuccess: (response) => {
+          setLocationCategories(response.data?.categories ?? []);
+        },
+      },
+    });
+  const [_fetchLocationTypes, loadingTypes] = useFetchLocationTypes({
+    callbacks: {
+      onSuccess: (response) => {
+        setLocationTypes(response.data?.types ?? []);
+      },
+    },
+  });
+
+  const [_fetchCities, loadingCities] = useFetchCities({
+    callbacks: {
+      onSuccess(response) {
+        setCitiesOptions(response.data?.cities ?? []);
+        setAdminUnitsSugestions(
+          response.data?.uniqueAdminstrativeUnitsTitles ?? {
+            broad: [],
+            intermediate: [],
+            narrow: [],
+          },
+        );
+      },
+    },
+  });
+
+  const loadLocationCategories = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchLocationCategories(
+        {},
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchLocationCategories],
+  );
+
+  const loadLocationTypes = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchLocationTypes(
+        {},
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchLocationTypes],
+  );
+
+  const loadCitiesOptions = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchCities(
+        {
+          state: parkData.state,
+          includeAdminstrativeRegions: true,
+          includeUniqueAdminstrativeUnitsTitles: true,
+        },
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [parkData.state, _fetchCities],
+  );
+
+  useEffect(() => {
+    void loadLocationCategories();
+  }, [loadLocationCategories]);
+
+  useEffect(() => {
+    void loadLocationTypes();
+  }, [loadLocationTypes]);
+
+  useEffect(() => {
+    void loadCitiesOptions();
+  }, [loadCitiesOptions]);
+
   const goToNextStep = () => {
     setEnableNextStep(false);
     setStep((prev) => prev + 1);
@@ -271,6 +390,16 @@ const LocationRegisterDialog = ({
         {step === 1 && (
           <BasicInfoStep
             parkData={parkData}
+            locationCategories={locationCategories}
+            locationTypes={locationTypes}
+            loadingCategories={loadingCategories}
+            loadingTypes={loadingTypes}
+            reloadLocationCategories={() => {
+              void loadLocationCategories({ invalidateCache: true });
+            }}
+            reloadLocationTypes={() => {
+              void loadLocationTypes({ invalidateCache: true });
+            }}
             setParkData={setParkData}
             setEnableNextStep={setEnableNextStep}
             activateReloadLocationCategoriesOnClose={() => {
@@ -287,10 +416,16 @@ const LocationRegisterDialog = ({
         {step === 2 && (
           <AddressStep
             parkData={parkData}
+            citiesOptions={citiesOptions}
+            adminUnitsSugestions={adminUnitsSugestions}
+            loadingCities={loadingCities}
             setParkData={setParkData}
             setEnableNextStep={setEnableNextStep}
             activateReloadCitiesOnClose={() => {
               setShouldReloadCities(true);
+            }}
+            reloadCitiesOptions={() => {
+              void loadCitiesOptions({ invalidateCache: true });
             }}
           />
         )}

@@ -142,7 +142,16 @@ const LocationSelector = ({
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
         if (response.data?.cities.length === 0) onNoCitiesFound?.();
-        const initialCity = response.data?.cities[0] ?? null;
+        const lastSelectedCityId = localStorage.getItem("lastSelectedCityId");
+        let initialCity: FetchCitiesResponse["cities"][number] | null = null;
+        if (lastSelectedCityId) {
+          initialCity =
+            response.data?.cities.find(
+              (city) => city.id === Number(lastSelectedCityId),
+            ) ?? null;
+        } else {
+          initialCity = response.data?.cities[0] ?? null;
+        }
         setSelectedCity(initialCity);
         if (defaultLocationId && !hasMadeFirstChange.current) return;
         onSelectedCityChange?.(initialCity);
@@ -248,6 +257,12 @@ const LocationSelector = ({
   useEffect(() => {
     void loadDefaultLocation();
   }, [loadDefaultLocation]);
+
+  useEffect(() => {
+    if (selectedCity) {
+      localStorage.setItem("lastSelectedCityId", String(selectedCity.id));
+    }
+  }, [selectedCity]);
 
   const broadUnits = useMemo(() => {
     return [
@@ -421,7 +436,12 @@ const LocationSelector = ({
           }}
         />
       </div>
-      {useAccordion ?
+      {(
+        useAccordion &&
+        (selectedCity?.broadAdministrativeUnitTitle ||
+          selectedCity?.intermediateAdministrativeUnitTitle ||
+          selectedCity?.narrowAdministrativeUnitTitle)
+      ) ?
         <CAccordion>
           <CAccordionSummary>
             <div className="flex flex-row items-center">

@@ -99,6 +99,20 @@ const DrawingProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [map, vector, modify, draw, snap]);
 
+  useEffect(() => {
+    const handleEscapeToCancelDrawing = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        draw.abortDrawing();
+      }
+    };
+
+    window.addEventListener("keydown", handleEscapeToCancelDrawing);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscapeToCancelDrawing);
+    };
+  }, [draw]);
+
   const [vectorSource, setVectorSource] = useState(source);
   useEffect(() => {
     setVectorSource(source);

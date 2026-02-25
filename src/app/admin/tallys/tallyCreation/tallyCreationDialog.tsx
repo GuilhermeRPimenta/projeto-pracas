@@ -48,7 +48,7 @@ const TallyCreationDialog = ({
 
   return (
     <CDialog
-      title="Criar avaliação"
+      title="Criar contagem"
       fullScreen
       open={open}
       onClose={onClose}
@@ -67,7 +67,7 @@ const TallyCreationDialog = ({
           }}
         />
         <Divider />
-        <h4>Horário da avaliação</h4>
+        <h4>Horário da contagem</h4>
         <CDateTimePicker
           label="Data de início"
           name="startDate"

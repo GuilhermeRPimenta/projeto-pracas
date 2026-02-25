@@ -279,10 +279,10 @@ const Sidebar = ({
           setFilter((prev) => ({ ...prev, name: e.target.value }));
         }}
       />
-      {loadingLocations && (
+      {(!!loadingLocations || !!loadingCities) && (
         <div className="flex w-full flex-col justify-center text-lg">
           <LinearProgress />
-          Carregando praças...
+          {loadingCities ? "Carregando cidades..." : "Carregando praças..."}
         </div>
       )}
       <Virtuoso

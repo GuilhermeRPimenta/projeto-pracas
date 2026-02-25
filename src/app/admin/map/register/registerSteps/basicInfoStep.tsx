@@ -5,12 +5,10 @@ import DeleteLocationCateogryOrTypeDialog from "@/app/admin/map/register/registe
 import LocationCategoryOrTypeSaveDialog from "@/app/admin/map/register/registerSteps/parametersDialogs/locationCategoryOrTypeSaveDialog";
 import CImageInput from "@/components/ui/CImageInput";
 import CSwitch from "@/components/ui/cSwtich";
-import { useFetchLocationCategories } from "@/lib/serverFunctions/apiCalls/locationCategory";
-import { useFetchLocationTypes } from "@/lib/serverFunctions/apiCalls/locationType";
 import { FetchLocationTypesResponse } from "@/lib/serverFunctions/queries/locationType";
 import { Divider } from "@mui/material";
 import { IconPencil, IconPlus } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import CAutocomplete from "../../../../../components/ui/cAutoComplete";
 import CTextField from "../../../../../components/ui/cTextField";
@@ -19,28 +17,34 @@ import { ParkRegisterData } from "../../../../../lib/types/parks/parkRegister";
 
 const BasicInfoStep = ({
   parkData,
+  locationCategories,
+  locationTypes,
+  loadingCategories,
+  loadingTypes,
   setEnableNextStep,
   setParkData,
   activateReloadLocationCategoriesOnClose,
   activateReloadLocationTypesOnClose,
+  reloadLocationCategories,
+  reloadLocationTypes,
   onImageChange,
 }: {
   parkData: ParkRegisterData;
+  locationCategories: FetchLocationCategoriesResponse["categories"];
+  locationTypes: FetchLocationTypesResponse["types"];
+  loadingCategories: boolean;
+  loadingTypes: boolean;
   setEnableNextStep: React.Dispatch<React.SetStateAction<boolean>>;
   setParkData: React.Dispatch<React.SetStateAction<ParkRegisterData>>;
   activateReloadLocationCategoriesOnClose: () => void;
   activateReloadLocationTypesOnClose: () => void;
+  reloadLocationCategories: () => void;
+  reloadLocationTypes: () => void;
   onImageChange: () => void;
 }) => {
   const [requiredFieldsFilled, setRequiredFieldsFilled] = useState({
     name: false,
   });
-  const [locationCategories, setLocationCategories] = useState<
-    FetchLocationCategoriesResponse["categories"]
-  >([]);
-  const [locationTypes, setLocationTypes] = useState<
-    FetchLocationTypesResponse["types"]
-  >([]);
 
   const [selectedItemToEdit, setSelectedItemToEdit] = useState<{
     id: number;
@@ -55,38 +59,6 @@ const BasicInfoStep = ({
   useEffect(() => {
     setEnableNextStep(requiredFieldsFilled.name);
   }, [requiredFieldsFilled, setEnableNextStep]);
-
-  const [_fetchLocationCategories, loadingCategories] =
-    useFetchLocationCategories({
-      callbacks: {
-        onSuccess: (response) => {
-          setLocationCategories(response.data?.categories ?? []);
-        },
-      },
-    });
-  const [_fetchLocationTypes, loadingTypes] = useFetchLocationTypes({
-    callbacks: {
-      onSuccess: (response) => {
-        setLocationTypes(response.data?.types ?? []);
-      },
-    },
-  });
-
-  const loadLocationCategories = useCallback(async () => {
-    await _fetchLocationCategories({});
-  }, [_fetchLocationCategories]);
-
-  const loadLocationTypes = useCallback(async () => {
-    await _fetchLocationTypes({});
-  }, [_fetchLocationTypes]);
-
-  useEffect(() => {
-    void loadLocationCategories();
-  }, [loadLocationCategories]);
-
-  useEffect(() => {
-    void loadLocationTypes();
-  }, [loadLocationTypes]);
 
   // #region memos
   const autocompleteCategoryValue = useMemo(() => {
@@ -208,10 +180,10 @@ const BasicInfoStep = ({
         reloadItems={() => {
           if (itemType === "CATEGORY") {
             activateReloadLocationCategoriesOnClose();
-            void loadLocationCategories();
+            void reloadLocationCategories();
           } else {
             activateReloadLocationTypesOnClose();
-            void loadLocationTypes();
+            void reloadLocationTypes();
           }
         }}
         selectedItem={selectedItemToEdit}
@@ -235,10 +207,10 @@ const BasicInfoStep = ({
         reloadItems={() => {
           if (itemType === "CATEGORY") {
             activateReloadLocationCategoriesOnClose();
-            void loadLocationCategories();
+            void reloadLocationCategories();
           } else {
             activateReloadLocationTypesOnClose();
-            void loadLocationTypes();
+            void reloadLocationTypes();
           }
         }}
       />

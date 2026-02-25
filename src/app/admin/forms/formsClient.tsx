@@ -35,9 +35,17 @@ const FormsClient = () => {
     },
   });
 
-  const loadForms = useCallback(() => {
-    void _fetchForms({ includeArchived: true });
-  }, [_fetchForms]);
+  const loadForms = useCallback(
+    ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      void _fetchForms(
+        { includeArchived: true },
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchForms],
+  );
 
   useEffect(() => {
     void loadForms();
@@ -217,13 +225,17 @@ const FormsClient = () => {
       <FormCreationDialog
         open={openFormCreationDialog}
         cloneForm={selectedForm}
-        reloadForms={loadForms}
+        reloadForms={() => {
+          loadForms({ invalidateCache: true });
+        }}
         onClose={() => setOpenFormCreationDialog(false)}
       />
       <FormArchiveDialog
         open={openFormArchiveDialog}
         onClose={() => setOpenFormArchiveDialog(false)}
-        reloadForms={loadForms}
+        reloadForms={() => {
+          loadForms({ invalidateCache: true });
+        }}
         formToArchive={selectedForm}
       />
     </div>

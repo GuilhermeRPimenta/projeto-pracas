@@ -10,7 +10,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import React, { ReactNode, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo, useRef } from "react";
 
 import CDialogFooter from "./cDialogFooter";
 import CDialogHeader from "./dDialogHeader";
@@ -176,6 +176,45 @@ const CDialog = ({
     () => fullScreen || (isMobileView && mobileFullScreen),
     [fullScreen, isMobileView, mobileFullScreen],
   );
+
+  const onCloseRef = useRef(onClose);
+  const skipNextPopStateRef = useRef(false);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!props.open || !memoFullScreen) {
+      return;
+    }
+
+    const handlePopState = () => {
+      if (skipNextPopStateRef.current) {
+        skipNextPopStateRef.current = false;
+        return;
+      }
+
+      const shouldNavigate = window.confirm(
+        "Deseja sair desta página? Alteracoes não salvas serão perdidas.",
+      );
+
+      if (!shouldNavigate) {
+        skipNextPopStateRef.current = true;
+        window.history.go(1);
+        return;
+      }
+
+      onCloseRef.current?.();
+    };
+
+    window.history.pushState({ cDialogFullscreenGuard: true }, "");
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [props.open, memoFullScreen]);
 
   const contentSx =
     disableContentPadding ?

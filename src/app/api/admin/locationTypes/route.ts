@@ -11,7 +11,10 @@ export async function GET() {
     const locations = await fetchLocationTypes();
     return new Response(JSON.stringify(locations), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=300",
+      },
     });
   } catch (error) {
     return new Response("Erro cao buscar tipos de praças!", {

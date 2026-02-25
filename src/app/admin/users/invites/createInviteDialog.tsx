@@ -1,4 +1,5 @@
 import RolesHelpDialogTrigger from "@/app/admin/users/rolesHelpDialogTrigger";
+import { useHelperCard } from "@/components/context/helperCardContext";
 import CAutocomplete from "@/components/ui/cAutoComplete";
 import CTextField from "@/components/ui/cTextField";
 import CDialog from "@/components/ui/dialog/cDialog";
@@ -7,7 +8,7 @@ import { FetchInvitesResponse } from "@/lib/serverFunctions/queries/invite";
 import { _createInviteV2 } from "@/lib/serverFunctions/serverActions/inviteUtil";
 import { useServerAction } from "@/lib/utils/useServerAction";
 import { Role } from "@prisma/client";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconClipboard } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 import { SystemSection, roles, rows } from "../consts";
@@ -23,6 +24,7 @@ const CreateInviteDialog = ({
   onClose: () => void;
   updateTable: () => void;
 }) => {
+  const { setHelperCard } = useHelperCard();
   const [action, loading] = useServerAction({
     action: _createInviteV2,
     callbacks: {
@@ -89,6 +91,15 @@ const CreateInviteDialog = ({
         },
       ],
   );
+  const copyLink = async () => {
+    const url = `${window.location.origin}/auth/register?inviteToken=${invite?.token}`;
+    await navigator.clipboard.writeText(url);
+    setHelperCard({
+      show: true,
+      helperCardType: "CONFIRM",
+      content: "Link copiado!",
+    });
+  };
 
   const reset = () => {
     setEmail("");
@@ -146,6 +157,9 @@ const CreateInviteDialog = ({
       mobileFullScreen
       open={open}
       onClose={onClose}
+      onCancel={() => {
+        void copyLink();
+      }}
       title="Criar convite"
       onConfirm={() => {
         void action({
@@ -155,6 +169,7 @@ const CreateInviteDialog = ({
         });
       }}
       confirmChildren={<IconCheck />}
+      cancelChildren={invite ? <IconClipboard /> : undefined}
       confirmLoading={loading}
     >
       <div className="flex flex-col gap-1">
