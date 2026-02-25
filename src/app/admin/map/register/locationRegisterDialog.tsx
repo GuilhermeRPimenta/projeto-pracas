@@ -16,7 +16,13 @@ import {
   IconArrowForwardUp,
   IconCheck,
 } from "@tabler/icons-react";
-import { startTransition, useCallback, useEffect, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 
 import CDialog from "../../../../components/ui/dialog/cDialog";
 import {
@@ -26,6 +32,10 @@ import {
 import { ParkRegisterData } from "../../../../lib/types/parks/parkRegister";
 import AddressStep from "./registerSteps/addressStep";
 import BasicInfoStep from "./registerSteps/basicInfoStep";
+
+export type LocationRegisterDialogRef = {
+  reset: () => void;
+};
 
 const defaultParkData: ParkRegisterData = {
   locationId: null,
@@ -57,6 +67,7 @@ const defaultParkData: ParkRegisterData = {
 const steps = ["", "", ""];
 
 const LocationRegisterDialog = ({
+  ref,
   open,
   location,
   locationId,
@@ -68,6 +79,7 @@ const LocationRegisterDialog = ({
   onFullCreationClose,
   onCloseDialogOnly,
 }: {
+  ref: React.Ref<LocationRegisterDialogRef>;
   open: boolean;
   location?: FetchLocationsResponse["locations"][number] | null;
   locationId?: number;
@@ -114,6 +126,9 @@ const LocationRegisterDialog = ({
       setStep(1);
     }
   };
+  useImperativeHandle(ref, () => ({
+    reset,
+  }));
   const handleClose = (isFullCreationClose: boolean) => {
     if (shouldReloadCities) {
       reloadCities();
