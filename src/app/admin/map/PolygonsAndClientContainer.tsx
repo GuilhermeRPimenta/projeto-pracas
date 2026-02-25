@@ -482,12 +482,15 @@ const PolygonsAndClientContainer = () => {
                 void loadLocations({ invalidateCache: true });
               }}
               reloadLocationTypes={() => {
-                void loadTypes({ invalidateCache: true });
+                // We don't need to invalidate cache here, as location types have already been fetched and cached in the register dialog, if there were edits.
+                void loadTypes();
               }}
               reloadLocationCategories={() => {
-                void loadCategories({ invalidateCache: true });
+                // We don't need to invalidate cache here, as location categories have already been fetched and cached in the register dialog, if there were edits.
+                void loadCategories();
               }}
               reloadCities={() => {
+                // We need to invalidate cache here because the fetchCities function is called inside the register dialog with different params, thus the cache for this query needs to be invalidated.
                 void loadCitiesOptions({ invalidateCache: true });
               }}
             />

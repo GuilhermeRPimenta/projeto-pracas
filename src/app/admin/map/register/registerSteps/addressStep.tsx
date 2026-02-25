@@ -2,11 +2,10 @@ import SaveCityDialog from "@/app/admin/map/register/registerSteps/parametersDia
 import AdministrativeUnitSaveDialog from "@/app/admin/map/register/registerSteps/parametersDialogs/administrativeUnitSaveDialog";
 import DeleteAdministrativeUnitDialog from "@/app/admin/map/register/registerSteps/parametersDialogs/deleteAdministrativeUnitDialog";
 import DeleteCityDialog from "@/app/admin/map/register/registerSteps/parametersDialogs/deleteCityDialog";
-import { useFetchCities } from "@/lib/serverFunctions/apiCalls/city";
 import { Divider } from "@mui/material";
 import { BrazilianStates } from "@prisma/client";
 import { IconPencil, IconPlus } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import CAutocomplete from "../../../../../components/ui/cAutoComplete";
 import CTextField from "../../../../../components/ui/cTextField";
@@ -21,14 +20,26 @@ export type AdministrativeUnitLevel = "NARROW" | "INTERMEDIATE" | "BROAD";
 
 const AddressStep = ({
   parkData,
+  citiesOptions,
+  adminUnitsSugestions,
+  loadingCities,
   setEnableNextStep,
   setParkData,
   activateReloadCitiesOnClose,
+  reloadCitiesOptions,
 }: {
   parkData: ParkRegisterData;
+  citiesOptions: FetchCitiesResponse["cities"] | null;
+  adminUnitsSugestions: {
+    narrow: string[];
+    intermediate: string[];
+    broad: string[];
+  };
+  loadingCities: boolean;
   setEnableNextStep: React.Dispatch<React.SetStateAction<boolean>>;
   setParkData: React.Dispatch<React.SetStateAction<ParkRegisterData>>;
   activateReloadCitiesOnClose: () => void;
+  reloadCitiesOptions: () => void;
 }) => {
   const [openCitySaveDialog, setOpenCitySaveDialog] = useState(false);
   const [openCityDeleDialog, setOpenCityDeleteDialog] = useState(false);
@@ -38,18 +49,6 @@ const AddressStep = ({
   const [requiredFieldsFilled, setRequiredFieldsFilled] = useState({
     firstStreet: false,
     cityId: false,
-  });
-  const [citiesOptions, setCitiesOptions] = useState<
-    FetchCitiesResponse["cities"] | null
-  >(null);
-  const [adminUnitsSugestions, setAdminUnitsSugestions] = useState<{
-    narrow: string[];
-    intermediate: string[];
-    broad: string[];
-  }>({
-    narrow: [],
-    intermediate: [],
-    broad: [],
   });
 
   const [selectedItemToEdit, setSelectedItemToEdit] = useState<{
@@ -61,35 +60,6 @@ const AddressStep = ({
   } | null>(null);
   const [unitLevel, setUnitLevel] = useState<AdministrativeUnitLevel>("BROAD");
 
-  const [_fetchCities, isLoadingCities] = useFetchCities({
-    callbacks: {
-      onSuccess(response) {
-        setCitiesOptions(response.data?.cities ?? []);
-        setAdminUnitsSugestions(
-          response.data?.uniqueAdminstrativeUnitsTitles ?? {
-            broad: [],
-            intermediate: [],
-            narrow: [],
-          },
-        );
-      },
-    },
-  });
-  const loadCitiesOptions = useCallback(
-    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
-      await _fetchCities(
-        {
-          state: parkData.state,
-          includeAdminstrativeRegions: true,
-          includeUniqueAdminstrativeUnitsTitles: true,
-        },
-        {
-          cache: invalidateCache ? "reload" : "default",
-        },
-      );
-    },
-    [parkData.state, _fetchCities],
-  );
   const [cityAdmUnits, setCityAdmUnits] = useState<{
     narrowUnits: UnitType;
     intermediateUnits: UnitType;
@@ -99,10 +69,6 @@ const AddressStep = ({
     intermediateUnits: [],
     broadUnits: [],
   });
-
-  useEffect(() => {
-    void loadCitiesOptions();
-  }, [loadCitiesOptions]);
 
   useEffect(() => {
     setEnableNextStep(
@@ -215,7 +181,7 @@ const AddressStep = ({
           });
           setOpenCitySaveDialog(true);
         }}
-        loading={isLoadingCities}
+        loading={loadingCities}
         onSuffixButtonClick={() => {
           setSelectedItemToEdit(null);
           setOpenCitySaveDialog((prev) => !prev);
@@ -237,7 +203,7 @@ const AddressStep = ({
           label={autocompleteCityValue?.broadAdministrativeUnitTitle}
           value={autocompleteBroadUnitValue}
           options={cityAdmUnits.broadUnits ?? []}
-          loading={isLoadingCities}
+          loading={loadingCities}
           suffixButtonChildren={<IconPlus />}
           appendIconButton={<IconPencil />}
           getOptionLabel={(o) => o.name}
@@ -273,7 +239,7 @@ const AddressStep = ({
           label={autocompleteCityValue?.intermediateAdministrativeUnitTitle}
           value={autocompleteIntermediateUnitValue}
           options={cityAdmUnits.intermediateUnits ?? []}
-          loading={isLoadingCities}
+          loading={loadingCities}
           suffixButtonChildren={<IconPlus />}
           appendIconButton={<IconPencil />}
           getOptionLabel={(o) => o.name}
@@ -309,7 +275,7 @@ const AddressStep = ({
           label={autocompleteCityValue?.narrowAdministrativeUnitTitle}
           value={autocompleteNarrowUnitValue}
           options={cityAdmUnits.narrowUnits ?? []}
-          loading={isLoadingCities}
+          loading={loadingCities}
           suffixButtonChildren={<IconPlus />}
           appendIconButton={<IconPencil />}
           getOptionLabel={(o) => o.name}
@@ -389,9 +355,7 @@ const AddressStep = ({
         previouslySelectedState={parkData.state}
         reloadCities={() => {
           activateReloadCitiesOnClose();
-          void loadCitiesOptions({
-            invalidateCache: true,
-          });
+          void reloadCitiesOptions();
         }}
         openDeleteDialog={() => {
           setSelectedItemToEdit({
@@ -416,9 +380,7 @@ const AddressStep = ({
           }));
           setSelectedItemToEdit(null);
           activateReloadCitiesOnClose();
-          void loadCitiesOptions({
-            invalidateCache: true,
-          });
+          void reloadCitiesOptions();
         }}
         onClose={() => {
           setOpenCityDeleteDialog(false);
@@ -428,9 +390,7 @@ const AddressStep = ({
         open={openUnitSaveDialog}
         reloadItems={() => {
           activateReloadCitiesOnClose();
-          void loadCitiesOptions({
-            invalidateCache: true,
-          });
+          void reloadCitiesOptions();
         }}
         onClose={() => {
           setOpenUnitSaveDialog(false);
@@ -471,9 +431,7 @@ const AddressStep = ({
           }
           setSelectedItemToEdit(null);
           activateReloadCitiesOnClose();
-          void loadCitiesOptions({
-            invalidateCache: true,
-          });
+          void reloadCitiesOptions();
         }}
         selectedItem={selectedItemToEdit}
         city={parkCity}
