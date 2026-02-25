@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
     const forms = await fetchForms(params);
     return new Response(JSON.stringify(forms), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=30",
+      },
     });
   } catch (error) {
     return new Response("Erro ao consultar formulários!", { status: 500 });

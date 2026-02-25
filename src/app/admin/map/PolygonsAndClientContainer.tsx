@@ -110,7 +110,16 @@ const PolygonsAndClientContainer = () => {
     callbacks: {
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
-        const initialCity = response.data?.cities[0] ?? null;
+        const lastSelectedCityId = localStorage.getItem("lastSelectedCityId");
+        let initialCity: FetchCitiesResponse["cities"][number] | null = null;
+        if (lastSelectedCityId) {
+          initialCity =
+            response.data?.cities.find(
+              (city) => city.id === Number(lastSelectedCityId),
+            ) ?? null;
+        } else {
+          initialCity = response.data?.cities[0] ?? null;
+        }
         setSelectedCity(initialCity);
       },
     },
@@ -186,30 +195,67 @@ const PolygonsAndClientContainer = () => {
 
     setTimeout(() => setDisableAutoFitAfterLocationsLoad(false), 500);
   }, [filter, locationsWithPolygon]);
-  const loadLocations = useCallback(async () => {
-    if (!selectedCity) {
-      setLocationsWithPolygon([]);
-      return;
-    }
-    await _fetchLocations({
-      cityId: selectedCity?.id,
-    });
-  }, [_fetchLocations, selectedCity]);
 
-  const loadCitiesOptions = useCallback(async () => {
-    await _fetchCities({
-      state: state,
-      includeAdminstrativeRegions: true,
-    });
-  }, [state, _fetchCities]);
+  const loadLocations = useCallback(
+    async ({
+      invalidateCache,
+    }: {
+      invalidateCache?: boolean;
+    } = {}) => {
+      if (!selectedCity) {
+        setLocationsWithPolygon([]);
+        return;
+      }
+      await _fetchLocations(
+        {
+          cityId: selectedCity?.id,
+        },
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchLocations, selectedCity],
+  );
 
-  const loadCategories = useCallback(async () => {
-    await _fetchLocationCategories({});
-  }, [_fetchLocationCategories]);
+  const loadCitiesOptions = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchCities(
+        {
+          state: state,
+          includeAdminstrativeRegions: true,
+        },
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [state, _fetchCities],
+  );
 
-  const loadTypes = useCallback(async () => {
-    await _fetchLocationTypes({});
-  }, [_fetchLocationTypes]);
+  const loadCategories = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchLocationCategories(
+        {},
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchLocationCategories],
+  );
+
+  const loadTypes = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchLocationTypes(
+        {},
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [_fetchLocationTypes],
+  );
 
   useEffect(() => {
     void loadCategories();
@@ -230,6 +276,11 @@ const PolygonsAndClientContainer = () => {
   useEffect(() => {
     applyFilter();
   }, [applyFilter]);
+
+  useEffect(() => {
+    if (!selectedCity) return;
+    localStorage.setItem("lastSelectedCityId", String(selectedCity.id));
+  }, [selectedCity]);
 
   const selectLocation = (locationId: number | null) => {
     if (locationId === null || locationId === selectedLocation?.id) {
@@ -310,7 +361,7 @@ const PolygonsAndClientContainer = () => {
                   setSidebarDialogOpen(false);
                 }}
                 reloadLocations={() => {
-                  void loadLocations();
+                  void loadLocations({ invalidateCache: true });
                 }}
               />
             </div>
@@ -327,7 +378,7 @@ const PolygonsAndClientContainer = () => {
           </div>
         )}
       </div>
-      {loadingLocations && (
+      {(!!loadingLocations || !!loadingCities) && (
         <div
           className={`absolute z-50 h-fit w-fit ${isMobileView ? "bottom-12 left-4" : "bottom-0 right-12"}`}
         >
@@ -428,16 +479,16 @@ const PolygonsAndClientContainer = () => {
               }}
               reloadLocations={() => {
                 setDisableAutoFitAfterLocationsLoad(true);
-                void loadLocations();
+                void loadLocations({ invalidateCache: true });
               }}
               reloadLocationTypes={() => {
-                void loadTypes();
+                void loadTypes({ invalidateCache: true });
               }}
               reloadLocationCategories={() => {
-                void loadCategories();
+                void loadCategories({ invalidateCache: true });
               }}
               reloadCities={() => {
-                void loadCitiesOptions();
+                void loadCitiesOptions({ invalidateCache: true });
               }}
             />
           </div>

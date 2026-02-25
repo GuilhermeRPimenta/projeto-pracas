@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
     const locations = await fetchCities(params);
     return new Response(JSON.stringify(locations), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=300",
+      },
     });
   } catch (error) {
     return new Response("Erro ao buscar cidades!", {

@@ -75,13 +75,21 @@ const AddressStep = ({
       },
     },
   });
-  const loadCitiesOptions = useCallback(async () => {
-    await _fetchCities({
-      state: parkData.state,
-      includeAdminstrativeRegions: true,
-      includeUniqueAdminstrativeUnitsTitles: true,
-    });
-  }, [parkData.state, _fetchCities]);
+  const loadCitiesOptions = useCallback(
+    async ({ invalidateCache }: { invalidateCache?: boolean } = {}) => {
+      await _fetchCities(
+        {
+          state: parkData.state,
+          includeAdminstrativeRegions: true,
+          includeUniqueAdminstrativeUnitsTitles: true,
+        },
+        {
+          cache: invalidateCache ? "reload" : "default",
+        },
+      );
+    },
+    [parkData.state, _fetchCities],
+  );
   const [cityAdmUnits, setCityAdmUnits] = useState<{
     narrowUnits: UnitType;
     intermediateUnits: UnitType;
@@ -381,7 +389,9 @@ const AddressStep = ({
         previouslySelectedState={parkData.state}
         reloadCities={() => {
           activateReloadCitiesOnClose();
-          void loadCitiesOptions();
+          void loadCitiesOptions({
+            invalidateCache: true,
+          });
         }}
         openDeleteDialog={() => {
           setSelectedItemToEdit({
@@ -406,7 +416,9 @@ const AddressStep = ({
           }));
           setSelectedItemToEdit(null);
           activateReloadCitiesOnClose();
-          void loadCitiesOptions();
+          void loadCitiesOptions({
+            invalidateCache: true,
+          });
         }}
         onClose={() => {
           setOpenCityDeleteDialog(false);
@@ -416,7 +428,9 @@ const AddressStep = ({
         open={openUnitSaveDialog}
         reloadItems={() => {
           activateReloadCitiesOnClose();
-          void loadCitiesOptions();
+          void loadCitiesOptions({
+            invalidateCache: true,
+          });
         }}
         onClose={() => {
           setOpenUnitSaveDialog(false);
@@ -457,7 +471,9 @@ const AddressStep = ({
           }
           setSelectedItemToEdit(null);
           activateReloadCitiesOnClose();
-          void loadCitiesOptions();
+          void loadCitiesOptions({
+            invalidateCache: true,
+          });
         }}
         selectedItem={selectedItemToEdit}
         city={parkCity}

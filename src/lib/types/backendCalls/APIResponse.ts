@@ -24,4 +24,15 @@ type UseFetchAPIParams<T> =
     }
   | undefined;
 
-export type { APIResponseInfo, APIResponse, FetchCallbacks, UseFetchAPIParams };
+type FetchAPIOptions = Omit<RequestInit, "method"> & {
+  next?: { tags?: string[] };
+  loadingMessage?: string;
+  showLoadingOverlay?: boolean;
+};
+export type {
+  APIResponseInfo,
+  APIResponse,
+  FetchCallbacks,
+  UseFetchAPIParams,
+  FetchAPIOptions,
+};
