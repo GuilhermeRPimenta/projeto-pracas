@@ -9,7 +9,7 @@ import CMenu from "@/components/ui/menu/cMenu";
 import { dateTimeWithoutSecondsFormater } from "@/lib/formatters/dateFormatters";
 import { useFetchForms } from "@/lib/serverFunctions/apiCalls/form";
 import { FetchFormsResponse } from "@/lib/serverFunctions/queries/form";
-import { Chip } from "@mui/material";
+import { Chip, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   IconClipboard,
@@ -25,6 +25,8 @@ import { FaTrashRestore } from "react-icons/fa";
 type FormRow = FetchFormsResponse["forms"][number];
 
 const FormsClient = () => {
+  const theme = useTheme();
+  const isMobileView = useMediaQuery(theme.breakpoints.down("lg"));
   const [_fetchForms, loading] = useFetchForms({
     callbacks: {
       onSuccess: ({ data }) => {
@@ -204,12 +206,13 @@ const FormsClient = () => {
         append={
           <PermissionGuard requiresAnyRoles={["FORM_MANAGER"]}>
             <CButton
+              square={isMobileView}
               onClick={() => {
                 setSelectedForm(undefined);
                 setOpenFormCreationDialog(true);
               }}
             >
-              <IconPlus /> Criar
+              <IconPlus /> {isMobileView ? "" : "Criar"}
             </CButton>
           </PermissionGuard>
         }

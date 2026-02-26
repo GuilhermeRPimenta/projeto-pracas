@@ -30,6 +30,7 @@ type CAutocompleteProps<
   name?: string;
   textFieldName?: string;
   suffixButtonChildren?: React.ReactNode;
+  suffixButtonLoading?: boolean;
   showAppendButtonWhenClear?: boolean;
   error?: boolean;
   onSuffixButtonClick?: () => void;
@@ -56,6 +57,7 @@ function CAutocomplete<
     error,
     loading,
     suffixButtonChildren,
+    suffixButtonLoading,
     showAppendButtonWhenClear,
     onAppendIconButtonClick,
     onSuffixButtonClick,
@@ -150,6 +152,7 @@ function CAutocomplete<
         {innerComponent}
         <CButton
           square
+          loading={suffixButtonLoading}
           onClick={handleSuffixButtonClick}
           sx={{
             height: {

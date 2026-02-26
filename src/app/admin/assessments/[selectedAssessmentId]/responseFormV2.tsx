@@ -57,14 +57,14 @@ export type SimpleMention = {
 };
 
 const ResponseFormV2 = ({
-  locationName,
   locationId,
+  locationName,
   assessmentTree,
   finalized,
   userCanEdit,
 }: {
-  locationName: string;
   locationId: number;
+  locationName: string;
   assessmentTree: {
     id: number;
     startDate: Date;
@@ -275,7 +275,7 @@ const ResponseFormV2 = ({
           <CDateTimePicker
             label="Início"
             value={startDate}
-            onAccept={(e) => {
+            onChange={(e) => {
               if (!e) return;
               setStartDate(e);
             }}
@@ -359,8 +359,8 @@ const ResponseFormV2 = ({
       />
       <DeleteAssessmentDialog
         assessmentId={assessmentTree.id}
-        locationId={locationId}
         open={openDeleteAssessmentDialog}
+        locationId={locationId}
         onClose={() => {
           setOpenDeleteAssessmentDialog(false);
         }}

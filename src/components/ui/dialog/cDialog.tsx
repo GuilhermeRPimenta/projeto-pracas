@@ -36,6 +36,7 @@ export type CDialogProps = DialogProps & {
   confirmLoading?: boolean;
   cancelLoading?: boolean;
   mobileFullScreen?: boolean;
+  removeCloseButton?: boolean;
   onCancel?: () => void;
   onConfirm?: () => void;
   onClose: () => void;
@@ -82,6 +83,7 @@ const CDialog = ({
   disableBackdropClose,
   confirmLoading,
   cancelLoading,
+  removeCloseButton,
   action,
   onCancel,
   onConfirm,
@@ -249,7 +251,12 @@ const CDialog = ({
               py: "0px",
             }}
           >
-            <CDialogHeader close={onClose} title={title} subtitle={subtitle} />
+            <CDialogHeader
+              close={onClose}
+              title={title}
+              subtitle={subtitle}
+              removeCloseButton={removeCloseButton}
+            />
           </DialogTitle>
 
           <DialogContent sx={contentSx} dividers={!!children}>
@@ -309,7 +316,12 @@ const CDialog = ({
           py: "0px",
         }}
       >
-        <CDialogHeader close={onClose} title={title} subtitle={subtitle} />
+        <CDialogHeader
+          close={onClose}
+          title={title}
+          subtitle={subtitle}
+          removeCloseButton={removeCloseButton}
+        />
       </DialogTitle>
 
       <DialogContent sx={contentSx} dividers={!!children}>

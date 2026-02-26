@@ -2,8 +2,9 @@
 
 import AssessmentCreationDialog from "@/app/admin/assessments/assessmentCreation/assessmentCreationDialog";
 import { FetchFormsResponse } from "@/lib/serverFunctions/queries/form";
-import { IconClipboard, IconFilter, IconPlus } from "@tabler/icons-react";
+import { IconFilter, IconListCheck, IconPlus } from "@tabler/icons-react";
 import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Suspense,
   useCallback,
@@ -35,13 +36,15 @@ export type AssessmentsFilterType =
   | "FINALIZATION_STATUS";
 
 const AssessmentsClient = ({
-  forms,
+  formsPromise,
   usersPromise,
 }: {
-  forms: FetchFormsResponse["forms"];
+  formsPromise: Promise<FetchFormsResponse["forms"]>;
   usersPromise: Promise<{ id: string; username: string }[]>;
 }) => {
-  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [params] = useState(useSearchParams());
   const lastFetchedLocationId = useRef<number | undefined>(undefined);
   const [isMobileView, setIsMobileView] = useState<boolean>(true);
   const { helperCardProcessResponse, setHelperCard } = useHelperCard();
@@ -259,6 +262,10 @@ const AssessmentsClient = ({
     };
   }, []);
 
+  useEffect(() => {
+    router.replace(pathname);
+  }, []);
+
   const totalFilters = useMemo(() => {
     let total = 0;
     if (locationId) total++;
@@ -282,10 +289,11 @@ const AssessmentsClient = ({
     intermediateUnitId,
     narrowUnitId,
   ]);
+
   return (
     <div className="flex h-full flex-col overflow-auto bg-white p-2 text-black">
       <CAdminHeader
-        titleIcon={<IconClipboard />}
+        titleIcon={<IconListCheck />}
         title="Avaliações"
         append={
           <div className="flex items-center gap-1">
@@ -330,7 +338,7 @@ const AssessmentsClient = ({
               : undefined
             }
             selectedLocationId={locationId}
-            forms={forms}
+            formsPromise={formsPromise}
             usersPromise={usersPromise}
             handleFilterChange={handleFilterChange}
           />
@@ -340,9 +348,6 @@ const AssessmentsClient = ({
         open={openAssessmentCreationDialog}
         onClose={() => {
           setOpenAssessmentCreationDialog(false);
-        }}
-        reloadAssessments={() => {
-          void fetchAssessments({ forceFetch: true });
         }}
       />
     </div>

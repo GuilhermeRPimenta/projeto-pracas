@@ -1,13 +1,13 @@
 import {
-  DateTimePicker,
-  DateTimePickerProps,
   DateTimeValidationError,
+  MobileDateTimePicker,
+  MobileDateTimePickerProps,
   PickerChangeHandlerContext,
 } from "@mui/x-date-pickers";
 import { PickerValue } from "@mui/x-date-pickers/internals";
 import React, { useCallback } from "react";
 
-type CDateTimePickerProps = DateTimePickerProps & {
+type CDateTimePickerProps = MobileDateTimePickerProps & {
   error?: boolean;
   helperText?: string;
   debounce?: number;
@@ -83,7 +83,7 @@ const CDateTimePicker = React.forwardRef<
       }
     : {};
   return (
-    <DateTimePicker
+    <MobileDateTimePicker
       ref={ref}
       ampm={ampm}
       onChange={handleChange}

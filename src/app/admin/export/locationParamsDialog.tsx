@@ -1,7 +1,6 @@
 import { SelectedLocationObj } from "@/app/admin/export/client";
 import { useUserContext } from "@/components/context/UserContext";
 import CCheckbox from "@/components/ui/cCheckbox";
-import CSwitch from "@/components/ui/cSwtich";
 import CToggleButtonGroup from "@/components/ui/cToggleButtonGroup";
 import CDialog from "@/components/ui/dialog/cDialog";
 import { dateTimeFormatter } from "@/lib/formatters/dateFormatters";
@@ -99,18 +98,7 @@ const LocationParamsDialog = ({
       }}
       fullScreen
     >
-      <div className="flex h-full flex-col gap-1">
-        <h5>Dados Cadastrais</h5>
-        <CSwitch
-          label="Exportar dados cadastrais"
-          checked={localLocation.exportRegistrationInfo}
-          onChange={(e) => {
-            setLocalLocation({
-              ...localLocation,
-              exportRegistrationInfo: e.target.checked,
-            });
-          }}
-        />
+      <div className="flex h-full w-full flex-col gap-1 overflow-auto">
         <CToggleButtonGroup
           value={listType}
           getLabel={(o) => o.label}
@@ -126,78 +114,100 @@ const LocationParamsDialog = ({
         )}
         <Divider />
         {listType === "TALLY" && (
-          <Virtuoso
-            data={tallys}
-            style={{ height: "100%", width: "100%" }}
-            itemContent={(_, t) => (
-              <div className="pb-4">
-                <div
-                  key={t.id}
-                  className="flex flex-row items-center bg-gray-200 p-2 px-2 shadow-xl"
-                >
-                  <CCheckbox
-                    checked={localLocation.tallysIds.includes(t.id)}
-                    onChange={(e) => {
-                      setLocalLocation((prev) => {
-                        if (!prev) return null;
-                        return {
-                          ...prev,
-                          tallysIds:
-                            e.target.checked ?
-                              [...prev.tallysIds, t.id]
-                            : prev.tallysIds.filter((id) => id !== t.id),
-                        };
-                      });
-                    }}
-                  />
-                  <div className="flex w-full flex-row items-center justify-between">
-                    <span>{`${dateTimeFormatter.format(new Date(t.startDate))} - ${t.endDate ? dateTimeFormatter.format(new Date(t.endDate)) : "Sem data final!"}`}</span>
-                    <span className="flex">
-                      <IconUser />
-                      {t.user.username}
-                    </span>
-                  </div>
-                </div>
+          <>
+            {tallys?.length === 0 && (
+              <div className="text-center text-xl font-semibold">
+                Nenhuma contagem nesta praça!
               </div>
             )}
-          />
+            <Virtuoso
+              data={tallys}
+              style={{ height: "100%", width: "100%" }}
+              itemContent={(_, t) => (
+                <div className="pb-4">
+                  <div
+                    key={t.id}
+                    className="flex flex-row items-center bg-gray-200 p-2 px-2 shadow-xl"
+                  >
+                    <CCheckbox
+                      checked={localLocation.tallysIds.includes(t.id)}
+                      onChange={(e) => {
+                        setLocalLocation((prev) => {
+                          if (!prev) return null;
+                          return {
+                            ...prev,
+                            tallysIds:
+                              e.target.checked ?
+                                [...prev.tallysIds, t.id]
+                              : prev.tallysIds.filter((id) => id !== t.id),
+                          };
+                        });
+                      }}
+                    />
+                    <div className="flex w-full flex-row items-center justify-between">
+                      <span>{`${dateTimeFormatter.format(new Date(t.startDate))} - ${t.endDate ? dateTimeFormatter.format(new Date(t.endDate)) : "Sem data final!"}`}</span>
+                      <span className="flex">
+                        <IconUser />
+                        {t.user.username}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            />
+          </>
         )}
         {listType === "ASSESSMENT" && (
-          <Virtuoso
-            data={assessments}
-            style={{ height: "100%", width: "100%" }}
-            itemContent={(_, a) => (
-              <div className="pb-4">
-                <div
-                  key={a.id}
-                  className="flex flex-row items-center bg-gray-200 p-2 px-2 shadow-xl"
-                >
-                  <CCheckbox
-                    checked={localLocation.assessmentsIds.includes(a.id)}
-                    onChange={(e) => {
-                      setLocalLocation((prev) => {
-                        if (!prev) return null;
-                        return {
-                          ...prev,
-                          assessmentsIds:
-                            e.target.checked ?
-                              [...prev.assessmentsIds, a.id]
-                            : prev.assessmentsIds.filter((id) => id !== a.id),
-                        };
-                      });
-                    }}
-                  />
-                  <div className="flex flex-col gap-1">
-                    <span>{`${dateTimeFormatter.format(new Date(a.startDate))} - ${a.endDate ? dateTimeFormatter.format(new Date(a.endDate)) : "Sem data final!"}`}</span>
-                    <span>
-                      <IconClipboard />
-                      {a.form.name}
-                    </span>
-                  </div>
-                </div>
+          <>
+            {assessments?.length === 0 && (
+              <div className="text-center text-xl font-semibold">
+                Nenhuma avaliação nesta praça!
               </div>
             )}
-          />
+            <Virtuoso
+              data={assessments}
+              style={{ height: "100%", width: "100%" }}
+              itemContent={(_, a) => (
+                <div className="pb-4">
+                  <div
+                    key={a.id}
+                    className="flex flex-row items-center bg-gray-200 p-2 px-2 shadow-xl"
+                  >
+                    <CCheckbox
+                      checked={localLocation.assessmentsIds.includes(a.id)}
+                      onChange={(e) => {
+                        setLocalLocation((prev) => {
+                          if (!prev) return null;
+                          return {
+                            ...prev,
+                            assessmentsIds:
+                              e.target.checked ?
+                                [...prev.assessmentsIds, a.id]
+                              : prev.assessmentsIds.filter((id) => id !== a.id),
+                          };
+                        });
+                      }}
+                    />
+                    <div className="flex w-full flex-row items-center justify-between">
+                      <div className="flex flex-col">
+                        <div className="flex flex-row items-center">
+                          <IconClipboard />
+                          {a.form.name}
+                        </div>
+                        <span className="flex flex-row items-center">
+                          {`${dateTimeFormatter.format(new Date(a.startDate))} - ${a.endDate ? dateTimeFormatter.format(new Date(a.endDate)) : "Sem data final!"}`}
+                        </span>
+                      </div>
+                      <span className="flex">
+                        <IconUser />
+                        {a.user.username}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            />
+          </>
         )}
       </div>
     </CDialog>

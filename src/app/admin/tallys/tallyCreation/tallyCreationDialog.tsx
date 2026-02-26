@@ -4,32 +4,38 @@ import CDialog from "@/components/ui/dialog/cDialog";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
 import { _createTallyV2 } from "@/lib/serverFunctions/serverActions/tallyUtil";
 import { useResettableActionState } from "@/lib/utils/useResettableActionState";
-import { Divider } from "@mui/material";
+import { Divider, LinearProgress } from "@mui/material";
 import { IconCheck } from "@tabler/icons-react";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useRouter } from "next-nprogress-bar";
 import { startTransition, useMemo, useState } from "react";
 
 const TallyCreationDialog = ({
   open,
   onClose,
-  reloadTallys,
 }: {
   open: boolean;
   onClose: () => void;
-  reloadTallys: () => void;
 }) => {
+  const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState<
     FetchLocationsResponse["locations"][number] | null
   >(null);
 
-  const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(
+    dayjs(new Date()),
+  );
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [formAction, isSaving] = useResettableActionState({
     action: _createTallyV2,
     callbacks: {
-      onSuccess: () => {
-        reloadTallys();
-        onClose();
+      onSuccess: (response) => {
+        if (!response.data?.tallyId) {
+          return;
+        }
+        setIsRedirecting(true);
+        router.push(`/admin/tallys/${response.data.tallyId}/fill`);
       },
     },
   });
@@ -55,27 +61,36 @@ const TallyCreationDialog = ({
       onConfirm={handleSubmit}
       confirmChildren={<IconCheck />}
       disableConfirmButton={!enableSaveButton}
-      confirmLoading={isSaving}
+      confirmLoading={isSaving || isRedirecting}
+      removeCloseButton={isRedirecting}
     >
       <div className="flex flex-col gap-1">
-        <h4>Seleção de praça</h4>
-        <LocationSelector
-          useAccordion
-          selectedLocation={selectedLocation}
-          onSelectedLocationChange={(v) => {
-            setSelectedLocation(v);
-          }}
-        />
-        <Divider />
-        <h4>Horário da contagem</h4>
-        <CDateTimePicker
-          label="Data de início"
-          name="startDate"
-          value={selectedDateTime}
-          onChange={(e) => {
-            setSelectedDateTime(e);
-          }}
-        />
+        {isRedirecting ?
+          <div className="flex w-full flex-col justify-center text-lg">
+            <LinearProgress />
+            Redirecionando...
+          </div>
+        : <>
+            <h4>Seleção de praça</h4>
+            <LocationSelector
+              useAccordion
+              selectedLocation={selectedLocation}
+              onSelectedLocationChange={(v) => {
+                setSelectedLocation(v);
+              }}
+            />
+            <Divider />
+            <h4>Horário da contagem</h4>
+            <CDateTimePicker
+              label="Data de início"
+              name="startDate"
+              value={selectedDateTime}
+              onChange={(e) => {
+                setSelectedDateTime(e);
+              }}
+            />
+          </>
+        }
       </div>
     </CDialog>
   );

@@ -4,7 +4,6 @@ import CAccordion from "@/components/ui/accordion/CAccordion";
 import CAccordionDetails from "@/components/ui/accordion/CAccordionDetails";
 import CAccordionSummary from "@/components/ui/accordion/CAccordionSummary";
 import CAutocomplete from "@/components/ui/cAutoComplete";
-import CButton from "@/components/ui/cButton";
 import CIconChip from "@/components/ui/cIconChip";
 import CTextField from "@/components/ui/cTextField";
 import CLocationAdministrativeUnits from "@/components/ui/location/cLocationAdministrativeUnits";
@@ -12,14 +11,13 @@ import { useFetchCities } from "@/lib/serverFunctions/apiCalls/city";
 import { useFetchLocations } from "@/lib/serverFunctions/apiCalls/location";
 import { FetchCitiesResponse } from "@/lib/serverFunctions/queries/city";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
+import {
+  getStoredLocationSelection,
+  LAST_SELECTED_LOCATION_KEY,
+} from "@/lib/utils/localStorage";
 import { Chip, Divider, LinearProgress } from "@mui/material";
 import { BrazilianStates } from "@prisma/client";
-import {
-  IconFilter,
-  IconMapPin,
-  IconPlus,
-  IconTree,
-} from "@tabler/icons-react";
+import { IconFilter, IconMapPin, IconTree } from "@tabler/icons-react";
 import Fuse from "fuse.js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
@@ -31,7 +29,9 @@ const LocationSelector = ({
   selectedLocations: SelectedLocationObj[];
   onSelecion: (location: FetchLocationsResponse["locations"][number]) => void;
 }) => {
-  const [state, setState] = useState<BrazilianStates>("MG");
+  const [state, setState] = useState<BrazilianStates>(
+    () => getStoredLocationSelection()?.state ?? "MG",
+  );
 
   const [selectedCity, setSelectedCity] = useState<
     FetchCitiesResponse["cities"][number] | null
@@ -71,7 +71,20 @@ const LocationSelector = ({
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
 
-        const initialCity = response.data?.cities[0] ?? null;
+        const lastSelection = getStoredLocationSelection();
+        const lastSelectedCityId = lastSelection?.cityId;
+        let initialCity: FetchCitiesResponse["cities"][number] | null = null;
+        if (lastSelectedCityId !== null && lastSelectedCityId !== undefined) {
+          initialCity =
+            response.data?.cities.find(
+              (city) => city.id === lastSelectedCityId,
+            ) ?? null;
+          if (!initialCity) {
+            initialCity = response.data?.cities[0] ?? null;
+          }
+        } else {
+          initialCity = response.data?.cities[0] ?? null;
+        }
         setSelectedCity(initialCity);
       },
     },
@@ -159,6 +172,17 @@ const LocationSelector = ({
   useEffect(() => {
     applyFilter();
   }, [applyFilter]);
+
+  useEffect(() => {
+    if (!selectedCity || selectedCity.state !== state) return;
+    localStorage.setItem(
+      LAST_SELECTED_LOCATION_KEY,
+      JSON.stringify({
+        state,
+        cityId: selectedCity?.id ?? null,
+      }),
+    );
+  }, [state, selectedCity]);
 
   const broadUnits = useMemo(() => {
     return [
@@ -347,7 +371,8 @@ const LocationSelector = ({
           <div className="pb-4">
             <div
               key={l.id}
-              className="flex flex-row justify-between bg-gray-200 p-2 px-2 shadow-xl"
+              className="flex cursor-pointer flex-row justify-between bg-gray-200 p-2 px-2 shadow-xl hover:scale-[1.02]"
+              onClick={() => onSelecion(l)}
             >
               <div className="flex h-auto w-full flex-col gap-1">
                 <span className="flex flex-wrap items-center break-all text-lg font-semibold sm:text-2xl">
@@ -359,16 +384,14 @@ const LocationSelector = ({
                   <CIconChip tooltip="Cidade - Estado" icon={<IconMapPin />} />
                   {`${l.cityName} - ${l.state}`}
                 </div>
-                <Divider />
-                <CLocationAdministrativeUnits location={l} />
+
+                <CLocationAdministrativeUnits location={l} topDivider />
+
                 <Divider />
                 <div className="flex items-center">
                   <span>{`Avaliações: ${l.assessmentCount},  Contagens: ${l.tallyCount}`}</span>
                 </div>
               </div>
-              <CButton variant="text" onClick={() => onSelecion(l)}>
-                <IconPlus />
-              </CButton>
             </div>
           </div>
         )}

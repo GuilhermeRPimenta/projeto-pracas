@@ -18,23 +18,34 @@ const ExportHome = () => {
   const [selectedLocationsObjs, setSelectedLocationsObjs] = useState<
     SelectedLocationObj[]
   >([]);
+  const [openLocationParamsDialog, setOpenLocationParamsDialog] =
+    useState(false);
+  const [selectedLocationForParamsDialog, setSelectedLocationForParamsDialog] =
+    useState<SelectedLocationObj | null>(null);
 
   const handleSelectedLocationsAddition = (
     locationObj: FetchLocationsResponse["locations"][number],
   ) => {
-    setSelectedLocationsObjs((prev) => [
-      ...prev,
-      {
-        ...locationObj,
-        tallysIds: [],
-        assessmentsIds: [],
-        exportRegistrationInfo: false,
-      },
-    ]);
+    const newSelectedLocation: SelectedLocationObj = {
+      ...locationObj,
+      tallysIds: [],
+      assessmentsIds: [],
+    };
+
+    setSelectedLocationsObjs((prev) => [...prev, newSelectedLocation]);
+    setSelectedLocationForParamsDialog(newSelectedLocation);
+    if (isMobileView) {
+      setOpenMenuDialog(true);
+    }
+    setOpenLocationParamsDialog(true);
   };
   const handleSelectedLocationsRemoval = (id: number) => {
     if (selectedLocationsObjs.some((location) => location.id === id)) {
       setSelectedLocationsObjs((prev) => prev.filter((item) => item.id !== id));
+      if (selectedLocationForParamsDialog?.id === id) {
+        setSelectedLocationForParamsDialog(null);
+        setOpenLocationParamsDialog(false);
+      }
     }
   };
 
@@ -44,6 +55,10 @@ const ExportHome = () => {
     setSelectedLocationsObjs((prev) =>
       prev.map((item) => (item.id === locationObj.id ? locationObj : item)),
     );
+    setSelectedLocationForParamsDialog((prev) => {
+      if (prev?.id !== locationObj.id) return prev;
+      return locationObj;
+    });
   };
   return (
     <div className="flex h-full flex-row justify-center gap-5 overflow-auto">
@@ -74,8 +89,18 @@ const ExportHome = () => {
           selectedLocationsObjs={selectedLocationsObjs}
           isMobileView={isMobileView}
           openDialog={openMenuDialog}
+          openLocationParamsDialog={openLocationParamsDialog}
+          selectedLocation={selectedLocationForParamsDialog}
           handleSelectedLocationsRemoval={handleSelectedLocationsRemoval}
           handleSelectedLocationObjChange={handleSelectedLocationObjChange}
+          handleOpenLocationParamsDialog={(location) => {
+            setSelectedLocationForParamsDialog(location);
+            setOpenLocationParamsDialog(true);
+          }}
+          handleCloseLocationParamsDialog={() => {
+            setOpenLocationParamsDialog(false);
+            setSelectedLocationForParamsDialog(null);
+          }}
           handleDialogClose={() => setOpenMenuDialog(false)}
         />
       : <Paper
@@ -88,8 +113,18 @@ const ExportHome = () => {
             selectedLocationsObjs={selectedLocationsObjs}
             isMobileView={isMobileView}
             openDialog={openMenuDialog}
+            openLocationParamsDialog={openLocationParamsDialog}
+            selectedLocation={selectedLocationForParamsDialog}
             handleSelectedLocationsRemoval={handleSelectedLocationsRemoval}
             handleSelectedLocationObjChange={handleSelectedLocationObjChange}
+            handleOpenLocationParamsDialog={(location) => {
+              setSelectedLocationForParamsDialog(location);
+              setOpenLocationParamsDialog(true);
+            }}
+            handleCloseLocationParamsDialog={() => {
+              setOpenLocationParamsDialog(false);
+              setSelectedLocationForParamsDialog(null);
+            }}
             handleDialogClose={() => setOpenMenuDialog(false)}
           />
         </Paper>
