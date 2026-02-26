@@ -3,7 +3,6 @@
 import LocationParamsDialog from "@/app/admin/export/locationParamsDialog";
 import CButton from "@/components/ui/cButton";
 import CIconChip from "@/components/ui/cIconChip";
-import CSwitch from "@/components/ui/cSwtich";
 import CDialog from "@/components/ui/dialog/cDialog";
 import CLocationAdministrativeUnits from "@/components/ui/location/cLocationAdministrativeUnits";
 import PermissionGuard from "@components/auth/permissionGuard";
@@ -30,22 +29,26 @@ const SelectedParks = ({
   selectedLocationsObjs,
   isMobileView,
   openDialog,
+  openLocationParamsDialog,
+  selectedLocation,
   handleSelectedLocationsRemoval,
   handleSelectedLocationObjChange,
+  handleOpenLocationParamsDialog,
+  handleCloseLocationParamsDialog,
   handleDialogClose,
 }: {
   selectedLocationsObjs: SelectedLocationObj[];
   isMobileView: boolean;
   openDialog: boolean;
+  openLocationParamsDialog: boolean;
+  selectedLocation: SelectedLocationObj | null;
   handleSelectedLocationsRemoval: (id: number) => void;
   handleSelectedLocationObjChange: (locationObj: SelectedLocationObj) => void;
+  handleOpenLocationParamsDialog: (location: SelectedLocationObj) => void;
+  handleCloseLocationParamsDialog: () => void;
   handleDialogClose: () => void;
 }) => {
   const { setHelperCard } = useHelperCard();
-  const [openLocationParamsDialog, setOpenLocationParamsDialog] =
-    useState(false);
-  const [selectedLocation, setSelectedLocation] =
-    useState<SelectedLocationObj | null>(null);
   const [loadingExport, setLoadingExport] = useState({
     registrationsData: false,
     evaluations: false,
@@ -54,10 +57,7 @@ const SelectedParks = ({
   });
   const handleRegistrationDataExport = async () => {
     setLoadingExport((prev) => ({ ...prev, registrationsData: true }));
-    const locationsToExport = selectedLocationsObjs.filter(
-      (location) => location.exportRegistrationInfo,
-    );
-    const locationsIds = locationsToExport.map((location) => location.id);
+    const locationsIds = selectedLocationsObjs.map((location) => location.id);
     const response = await _exportRegistrationData(locationsIds);
     if (response.statusCode === 401) {
       setHelperCard({
@@ -287,15 +287,8 @@ const SelectedParks = ({
                     {`${l.cityName} - ${l.state}`}
                   </div>
 
-                  <Divider />
-                  <CLocationAdministrativeUnits location={l} />
-                  <Divider />
-                  <div className="flex items-center">
-                    <span>
-                      {`Exportar dados de cadastro:`}{" "}
-                      <CSwitch disabled checked={l.exportRegistrationInfo} />
-                    </span>
-                  </div>
+                  <CLocationAdministrativeUnits location={l} topDivider />
+
                   <Divider />
                   <div className="flex items-center">
                     <span>{`Avaliações selecionadas: ${l.assessmentsIds.length}/${l.assessmentCount}`}</span>
@@ -305,18 +298,17 @@ const SelectedParks = ({
                     <span>{`Contagens Selecionadas: ${l.tallysIds.length}/${l.tallyCount}`}</span>
                   </div>
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-1">
                   <CButton
-                    variant="text"
+                    square
                     onClick={() => {
-                      setSelectedLocation(l);
-                      setOpenLocationParamsDialog(true);
+                      handleOpenLocationParamsDialog(l);
                     }}
                   >
                     <IconPencil />
                   </CButton>
                   <CButton
-                    variant="text"
+                    square
                     onClick={() => {
                       handleSelectedLocationsRemoval(l.id);
                     }}
@@ -380,9 +372,7 @@ const SelectedParks = ({
       </div>
       <LocationParamsDialog
         open={openLocationParamsDialog}
-        onClose={() => {
-          setOpenLocationParamsDialog(false);
-        }}
+        onClose={handleCloseLocationParamsDialog}
         location={selectedLocation}
         handleSelectedLocationObjChange={handleSelectedLocationObjChange}
       />

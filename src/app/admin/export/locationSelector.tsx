@@ -4,7 +4,6 @@ import CAccordion from "@/components/ui/accordion/CAccordion";
 import CAccordionDetails from "@/components/ui/accordion/CAccordionDetails";
 import CAccordionSummary from "@/components/ui/accordion/CAccordionSummary";
 import CAutocomplete from "@/components/ui/cAutoComplete";
-import CButton from "@/components/ui/cButton";
 import CIconChip from "@/components/ui/cIconChip";
 import CTextField from "@/components/ui/cTextField";
 import CLocationAdministrativeUnits from "@/components/ui/location/cLocationAdministrativeUnits";
@@ -14,12 +13,7 @@ import { FetchCitiesResponse } from "@/lib/serverFunctions/queries/city";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
 import { Chip, Divider, LinearProgress } from "@mui/material";
 import { BrazilianStates } from "@prisma/client";
-import {
-  IconFilter,
-  IconMapPin,
-  IconPlus,
-  IconTree,
-} from "@tabler/icons-react";
+import { IconFilter, IconMapPin, IconTree } from "@tabler/icons-react";
 import Fuse from "fuse.js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
@@ -71,7 +65,16 @@ const LocationSelector = ({
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
 
-        const initialCity = response.data?.cities[0] ?? null;
+        const lastSelectedCityId = localStorage.getItem("lastSelectedCityId");
+        let initialCity: FetchCitiesResponse["cities"][number] | null = null;
+        if (lastSelectedCityId) {
+          initialCity =
+            response.data?.cities.find(
+              (city) => city.id === Number(lastSelectedCityId),
+            ) ?? null;
+        } else {
+          initialCity = response.data?.cities[0] ?? null;
+        }
         setSelectedCity(initialCity);
       },
     },
@@ -159,6 +162,12 @@ const LocationSelector = ({
   useEffect(() => {
     applyFilter();
   }, [applyFilter]);
+
+  useEffect(() => {
+    if (selectedCity) {
+      localStorage.setItem("lastSelectedCityId", String(selectedCity.id));
+    }
+  }, [selectedCity]);
 
   const broadUnits = useMemo(() => {
     return [
@@ -347,7 +356,8 @@ const LocationSelector = ({
           <div className="pb-4">
             <div
               key={l.id}
-              className="flex flex-row justify-between bg-gray-200 p-2 px-2 shadow-xl"
+              className="flex cursor-pointer flex-row justify-between bg-gray-200 p-2 px-2 shadow-xl hover:scale-[1.02]"
+              onClick={() => onSelecion(l)}
             >
               <div className="flex h-auto w-full flex-col gap-1">
                 <span className="flex flex-wrap items-center break-all text-lg font-semibold sm:text-2xl">
@@ -359,16 +369,14 @@ const LocationSelector = ({
                   <CIconChip tooltip="Cidade - Estado" icon={<IconMapPin />} />
                   {`${l.cityName} - ${l.state}`}
                 </div>
-                <Divider />
-                <CLocationAdministrativeUnits location={l} />
+
+                <CLocationAdministrativeUnits location={l} topDivider />
+
                 <Divider />
                 <div className="flex items-center">
                   <span>{`Avaliações: ${l.assessmentCount},  Contagens: ${l.tallyCount}`}</span>
                 </div>
               </div>
-              <CButton variant="text" onClick={() => onSelecion(l)}>
-                <IconPlus />
-              </CButton>
             </div>
           </div>
         )}
