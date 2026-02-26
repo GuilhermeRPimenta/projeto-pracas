@@ -10,6 +10,10 @@ import { useFetchLocationTypes } from "@/lib/serverFunctions/apiCalls/locationTy
 import { FetchCitiesResponse } from "@/lib/serverFunctions/queries/city";
 import { FetchLocationCategoriesResponse } from "@/lib/serverFunctions/queries/locationCategory";
 import { FetchLocationTypesResponse } from "@/lib/serverFunctions/queries/locationType";
+import {
+  getStoredLocationSelection,
+  LAST_SELECTED_LOCATION_KEY,
+} from "@/lib/utils/localStorage";
 import { Chip, CircularProgress } from "@mui/material";
 import { BrazilianStates } from "@prisma/client";
 import {
@@ -92,7 +96,9 @@ const PolygonsAndClientContainer = () => {
   }, [filter]);
 
   const [isCreating, setIsCreating] = useState(false);
-  const [state, setState] = useState<BrazilianStates>("MG");
+  const [state, setState] = useState<BrazilianStates>(
+    () => getStoredLocationSelection()?.state ?? "MG",
+  );
   const [selectedCity, setSelectedCity] = useState<
     FetchCitiesResponse["cities"][number] | null
   >(null);
@@ -110,13 +116,17 @@ const PolygonsAndClientContainer = () => {
     callbacks: {
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
-        const lastSelectedCityId = localStorage.getItem("lastSelectedCityId");
+        const lastSelection = getStoredLocationSelection();
+        const lastSelectedCityId = lastSelection?.cityId;
         let initialCity: FetchCitiesResponse["cities"][number] | null = null;
-        if (lastSelectedCityId) {
+        if (lastSelectedCityId !== null && lastSelectedCityId !== undefined) {
           initialCity =
             response.data?.cities.find(
-              (city) => city.id === Number(lastSelectedCityId),
+              (city) => city.id === lastSelectedCityId,
             ) ?? null;
+          if (!initialCity) {
+            initialCity = response.data?.cities[0] ?? null;
+          }
         } else {
           initialCity = response.data?.cities[0] ?? null;
         }
@@ -278,9 +288,15 @@ const PolygonsAndClientContainer = () => {
   }, [applyFilter]);
 
   useEffect(() => {
-    if (!selectedCity) return;
-    localStorage.setItem("lastSelectedCityId", String(selectedCity.id));
-  }, [selectedCity]);
+    if (!selectedCity || selectedCity.state !== state) return;
+    localStorage.setItem(
+      LAST_SELECTED_LOCATION_KEY,
+      JSON.stringify({
+        state,
+        cityId: selectedCity?.id ?? null,
+      }),
+    );
+  }, [state, selectedCity]);
 
   const selectLocation = (locationId: number | null) => {
     if (locationId === null || locationId === selectedLocation?.id) {

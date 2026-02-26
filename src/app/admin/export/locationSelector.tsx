@@ -11,6 +11,10 @@ import { useFetchCities } from "@/lib/serverFunctions/apiCalls/city";
 import { useFetchLocations } from "@/lib/serverFunctions/apiCalls/location";
 import { FetchCitiesResponse } from "@/lib/serverFunctions/queries/city";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
+import {
+  getStoredLocationSelection,
+  LAST_SELECTED_LOCATION_KEY,
+} from "@/lib/utils/localStorage";
 import { Chip, Divider, LinearProgress } from "@mui/material";
 import { BrazilianStates } from "@prisma/client";
 import { IconFilter, IconMapPin, IconTree } from "@tabler/icons-react";
@@ -25,7 +29,9 @@ const LocationSelector = ({
   selectedLocations: SelectedLocationObj[];
   onSelecion: (location: FetchLocationsResponse["locations"][number]) => void;
 }) => {
-  const [state, setState] = useState<BrazilianStates>("MG");
+  const [state, setState] = useState<BrazilianStates>(
+    () => getStoredLocationSelection()?.state ?? "MG",
+  );
 
   const [selectedCity, setSelectedCity] = useState<
     FetchCitiesResponse["cities"][number] | null
@@ -65,13 +71,17 @@ const LocationSelector = ({
       onSuccess: (response) => {
         setCitiesOptions(response.data?.cities ?? []);
 
-        const lastSelectedCityId = localStorage.getItem("lastSelectedCityId");
+        const lastSelection = getStoredLocationSelection();
+        const lastSelectedCityId = lastSelection?.cityId;
         let initialCity: FetchCitiesResponse["cities"][number] | null = null;
-        if (lastSelectedCityId) {
+        if (lastSelectedCityId !== null && lastSelectedCityId !== undefined) {
           initialCity =
             response.data?.cities.find(
-              (city) => city.id === Number(lastSelectedCityId),
+              (city) => city.id === lastSelectedCityId,
             ) ?? null;
+          if (!initialCity) {
+            initialCity = response.data?.cities[0] ?? null;
+          }
         } else {
           initialCity = response.data?.cities[0] ?? null;
         }
@@ -164,10 +174,15 @@ const LocationSelector = ({
   }, [applyFilter]);
 
   useEffect(() => {
-    if (selectedCity) {
-      localStorage.setItem("lastSelectedCityId", String(selectedCity.id));
-    }
-  }, [selectedCity]);
+    if (!selectedCity || selectedCity.state !== state) return;
+    localStorage.setItem(
+      LAST_SELECTED_LOCATION_KEY,
+      JSON.stringify({
+        state,
+        cityId: selectedCity?.id ?? null,
+      }),
+    );
+  }, [state, selectedCity]);
 
   const broadUnits = useMemo(() => {
     return [
