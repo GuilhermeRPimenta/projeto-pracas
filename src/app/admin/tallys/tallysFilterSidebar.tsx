@@ -1,7 +1,6 @@
 import { TallysFilterType } from "@/app/admin/tallys/tallysClient";
 import TallysFilter from "@/app/admin/tallys/tallysFilter";
 import CDialog from "@/components/ui/dialog/cDialog";
-import { use } from "react";
 
 const TallysFilterSidebar = ({
   usersPromise,
@@ -25,13 +24,12 @@ const TallysFilterSidebar = ({
     newValue: string | number | Date | null;
   }) => void;
 }) => {
-  const users = use(usersPromise);
   const innerComponent = (
     <div className="h-full w-full overflow-auto border-l border-gray-200 px-1">
       <TallysFilter
         defaultLocationId={defaultLocationId}
         selectedLocationId={selectedLocationId}
-        users={users}
+        usersPromise={usersPromise}
         onNoCitiesFound={onNoCitiesFound}
         handleFilterChange={handleFilterChange}
       />

@@ -2,6 +2,7 @@ import { TallysFilterType } from "@/app/admin/tallys/tallysClient";
 import LocationSelector from "@/components/locationSelector/locationSelector";
 import { FINALIZATION_STATUS } from "@/lib/enums/finalizationStatus";
 import { Divider } from "@mui/material";
+import { Suspense, use } from "react";
 
 import CAutocomplete from "../../../components/ui/cAutoComplete";
 import CDateTimePicker from "../../../components/ui/cDateTimePicker";
@@ -21,14 +22,39 @@ const statusOptions = [
   },
 ];
 
+const UserSelector = ({
+  usersPromise,
+  handleFilterChange,
+}: {
+  usersPromise: Promise<{ id: string; username: string }[]>;
+  handleFilterChange: (params: {
+    type: TallysFilterType;
+    newValue: string | number | Date | null;
+  }) => void;
+}) => {
+  const users = use(usersPromise);
+
+  return (
+    <CAutocomplete
+      label="Responsável"
+      options={users}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      getOptionLabel={(i) => i.username}
+      onChange={(_, a) =>
+        handleFilterChange({ type: "USER_ID", newValue: a?.id ?? null })
+      }
+    />
+  );
+};
+
 const TallysFilter = ({
-  users,
+  usersPromise,
   selectedLocationId,
   defaultLocationId,
   onNoCitiesFound,
   handleFilterChange,
 }: {
-  users: { id: string; username: string }[];
+  usersPromise: Promise<{ id: string; username: string }[]>;
   selectedLocationId: number | undefined;
   defaultLocationId: number | undefined;
   onNoCitiesFound?: () => void;
@@ -95,15 +121,12 @@ const TallysFilter = ({
       />
       <Divider />
       <h4>Responsável</h4>
-      <CAutocomplete
-        label="Responsável"
-        options={users}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        getOptionLabel={(i) => i.username}
-        onChange={(_, a) =>
-          handleFilterChange({ type: "USER_ID", newValue: a?.id ?? null })
-        }
-      />
+      <Suspense fallback={<CAutocomplete label="Responsável" options={[]} loading />}>
+        <UserSelector
+          usersPromise={usersPromise}
+          handleFilterChange={handleFilterChange}
+        />
+      </Suspense>
       <Divider />
       <h4>Status</h4>
       <CAutocomplete
