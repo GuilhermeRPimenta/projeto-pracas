@@ -1,8 +1,10 @@
 import LocationSelector from "@/components/locationSelector/locationSelector";
 import { FINALIZATION_STATUS } from "@/lib/enums/finalizationStatus";
+import { FetchFormsResponse } from "@/lib/serverFunctions/queries/form";
 import { Divider } from "@mui/material";
 import { IconExternalLink } from "@tabler/icons-react";
 import { useRouter } from "next-nprogress-bar";
+import { Suspense, use, useState } from "react";
 
 import CAutocomplete from "../../../components/ui/cAutoComplete";
 import CDateTimePicker from "../../../components/ui/cDateTimePicker";
@@ -23,16 +25,76 @@ const statusOptions = [
   },
 ];
 
+const FormSelector = ({
+  formsPromise,
+  handleFilterChange,
+}: {
+  formsPromise: Promise<FetchFormsResponse["forms"]>;
+  handleFilterChange: (params: {
+    type: AssessmentsFilterType;
+    newValue: string | number | Date | null;
+  }) => void;
+}) => {
+  const router = useRouter();
+  const forms = use(formsPromise);
+
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  return (
+    <CAutocomplete
+      label="Formulário"
+      className="w-full"
+      options={forms}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      getOptionLabel={(i) => i.name}
+      onChange={(_, a) =>
+        handleFilterChange({ type: "FORM_ID", newValue: a?.id ?? null })
+      }
+      suffixButtonChildren={<IconExternalLink />}
+      suffixButtonLoading={isRedirecting}
+      onSuffixButtonClick={() => {
+        setIsRedirecting(true);
+        router.push("/admin/forms");
+      }}
+    />
+  );
+};
+
+const UserSelector = ({
+  usersPromise,
+  handleFilterChange,
+}: {
+  usersPromise: Promise<{ id: string; username: string }[]>;
+  handleFilterChange: (params: {
+    type: AssessmentsFilterType;
+    newValue: string | number | Date | null;
+  }) => void;
+}) => {
+  const users = use(usersPromise);
+
+  return (
+    <CAutocomplete
+      label="Responsável"
+      options={users}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      getOptionLabel={(i) => i.username}
+      onChange={(_, a) =>
+        handleFilterChange({ type: "USER_ID", newValue: a?.id ?? null })
+      }
+    />
+  );
+};
+
 const AssessmentsFilter = ({
-  forms,
-  users,
+  formsPromise,
+  usersPromise,
   selectedLocationId,
   defaultLocationId,
   onNoCitiesFound,
   handleFilterChange,
 }: {
-  forms: { id: number; name: string }[];
-  users: { id: string; username: string }[];
+  formsPromise: Promise<FetchFormsResponse["forms"]>;
+  usersPromise: Promise<{ id: string; username: string }[]>;
   selectedLocationId: number | undefined;
   defaultLocationId: number | undefined;
   onNoCitiesFound?: () => void;
@@ -41,7 +103,6 @@ const AssessmentsFilter = ({
     newValue: string | number | Date | null;
   }) => void;
 }) => {
-  const router = useRouter();
   return (
     <div className="flex flex-col gap-1">
       <h4>Localização</h4>
@@ -76,20 +137,21 @@ const AssessmentsFilter = ({
       />
       <Divider />
       <h4>Formulário</h4>
-      <CAutocomplete
-        label="Formulário"
-        className="w-full"
-        options={forms}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        getOptionLabel={(i) => i.name}
-        onChange={(_, a) =>
-          handleFilterChange({ type: "FORM_ID", newValue: a?.id ?? null })
+      <Suspense
+        fallback={
+          <CAutocomplete
+            label="Formulário"
+            className="w-full"
+            options={[]}
+            loading
+          />
         }
-        suffixButtonChildren={<IconExternalLink />}
-        onSuffixButtonClick={() => {
-          router.push("/admin/forms");
-        }}
-      />
+      >
+        <FormSelector
+          formsPromise={formsPromise}
+          handleFilterChange={handleFilterChange}
+        />
+      </Suspense>
       <Divider />
       <h4>Data inicial</h4>
       <CDateTimePicker
@@ -116,15 +178,14 @@ const AssessmentsFilter = ({
       />
       <Divider />
       <h4>Responsável</h4>
-      <CAutocomplete
-        label="Responsável"
-        options={users}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        getOptionLabel={(i) => i.username}
-        onChange={(_, a) =>
-          handleFilterChange({ type: "USER_ID", newValue: a?.id ?? null })
-        }
-      />
+      <Suspense
+        fallback={<CAutocomplete label="Responsável" options={[]} loading />}
+      >
+        <UserSelector
+          usersPromise={usersPromise}
+          handleFilterChange={handleFilterChange}
+        />
+      </Suspense>
       <Divider />
       <h4>Status</h4>
       <CAutocomplete

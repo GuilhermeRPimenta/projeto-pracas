@@ -36,10 +36,10 @@ export type AssessmentsFilterType =
   | "FINALIZATION_STATUS";
 
 const AssessmentsClient = ({
-  forms,
+  formsPromise,
   usersPromise,
 }: {
-  forms: FetchFormsResponse["forms"];
+  formsPromise: Promise<FetchFormsResponse["forms"]>;
   usersPromise: Promise<{ id: string; username: string }[]>;
 }) => {
   const router = useRouter();
@@ -338,7 +338,7 @@ const AssessmentsClient = ({
               : undefined
             }
             selectedLocationId={locationId}
-            forms={forms}
+            formsPromise={formsPromise}
             usersPromise={usersPromise}
             handleFilterChange={handleFilterChange}
           />
