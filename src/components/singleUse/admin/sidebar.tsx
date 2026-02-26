@@ -54,7 +54,7 @@ const Sidebar = () => {
       show: true,
     },
     {
-      icon: <IconClipboard size={34} />,
+      icon: <IconListCheck size={34} />,
       name: "Avaliações",
       path: "/admin/assessments",
       show: checkIfRolesArrayContainsAny(user.roles, {
@@ -68,7 +68,7 @@ const Sidebar = () => {
       show: checkIfRolesArrayContainsAny(user.roles, { roleGroups: ["TALLY"] }),
     },
     {
-      icon: <IconListCheck size={34} />,
+      icon: <IconClipboard size={34} />,
       name: "Formulários",
       path: "/admin/forms",
       show: checkIfRolesArrayContainsAny(user.roles, { roleGroups: ["FORM"] }),

@@ -209,7 +209,7 @@ const TallyInProgressDatabaseOptions = ({
       <CDateTimePicker
         label="Início da contagem em:"
         value={startDate}
-        onAccept={(e) => {
+        onChange={(e) => {
           if (!e) return;
           setStartDate(e);
         }}
@@ -239,7 +239,7 @@ const TallyInProgressDatabaseOptions = ({
             disabled={saveDeleteState === "SAVE"}
             helperText={!validEndDate ? "Obrigatório!" : ""}
             label="Fim da contagem em:"
-            onAccept={(e) => {
+            onChange={(e) => {
               setEndDate(e);
               setValidEndDate(true);
             }}

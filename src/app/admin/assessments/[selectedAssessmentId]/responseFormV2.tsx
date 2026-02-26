@@ -275,7 +275,7 @@ const ResponseFormV2 = ({
           <CDateTimePicker
             label="Início"
             value={startDate}
-            onAccept={(e) => {
+            onChange={(e) => {
               if (!e) return;
               setStartDate(e);
             }}

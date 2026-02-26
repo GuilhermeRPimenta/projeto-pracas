@@ -2,7 +2,7 @@
 
 import AssessmentCreationDialog from "@/app/admin/assessments/assessmentCreation/assessmentCreationDialog";
 import { FetchFormsResponse } from "@/lib/serverFunctions/queries/form";
-import { IconClipboard, IconFilter, IconPlus } from "@tabler/icons-react";
+import { IconFilter, IconListCheck, IconPlus } from "@tabler/icons-react";
 import { useSearchParams } from "next/navigation";
 import {
   Suspense,
@@ -285,7 +285,7 @@ const AssessmentsClient = ({
   return (
     <div className="flex h-full flex-col overflow-auto bg-white p-2 text-black">
       <CAdminHeader
-        titleIcon={<IconClipboard />}
+        titleIcon={<IconListCheck />}
         title="Avaliações"
         append={
           <div className="flex items-center gap-1">
