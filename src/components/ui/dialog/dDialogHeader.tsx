@@ -4,10 +4,12 @@ import { IconX } from "@tabler/icons-react";
 const CDialogHeader = ({
   title,
   subtitle,
+  removeCloseButton,
   close,
 }: {
   title?: string;
   subtitle?: string;
+  removeCloseButton?: boolean;
   close: () => void;
 }) => {
   return (
@@ -16,16 +18,18 @@ const CDialogHeader = ({
         <h4 className="truncate text-wrap text-lg font-semibold sm:text-4xl">
           {title}
         </h4>
-        <Button
-          className="ml-auto text-black"
-          variant={"ghost"}
-          size={"icon"}
-          onPress={() => {
-            close();
-          }}
-        >
-          <IconX />
-        </Button>
+        {!removeCloseButton && (
+          <Button
+            className="ml-auto text-black"
+            variant={"ghost"}
+            size={"icon"}
+            onPress={() => {
+              close();
+            }}
+          >
+            <IconX />
+          </Button>
+        )}
       </div>
 
       <h5 className="text-sm font-semibold text-gray-500 sm:text-2xl">

@@ -5,34 +5,40 @@ import CDialog from "@/components/ui/dialog/cDialog";
 import { FetchLocationsResponse } from "@/lib/serverFunctions/queries/location";
 import { _createAssessmentV2 } from "@/lib/serverFunctions/serverActions/assessmentUtil";
 import { useResettableActionState } from "@/lib/utils/useResettableActionState";
-import { Divider } from "@mui/material";
+import { Divider, LinearProgress } from "@mui/material";
 import { IconCheck } from "@tabler/icons-react";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useRouter } from "next-nprogress-bar";
 import { startTransition, useMemo, useState } from "react";
 
 const AssessmentCreationDialog = ({
   open,
   onClose,
-  reloadAssessments,
 }: {
   open: boolean;
   onClose: () => void;
-  reloadAssessments: () => void;
 }) => {
+  const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState<
     FetchLocationsResponse["locations"][number] | null
   >(null);
 
-  const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(
+    dayjs(new Date()),
+  );
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [selectedForm, setSelectedForm] = useState<{ id: number } | null>(null);
 
   const [formAction, isSaving] = useResettableActionState({
     action: _createAssessmentV2,
     callbacks: {
-      onSuccess: () => {
-        reloadAssessments();
-        onClose();
+      onSuccess: (response) => {
+        if (!response.data?.assessmentId) {
+          return;
+        }
+        setIsRedirecting(true);
+        router.push(`/admin/assessments/${response.data.assessmentId}`);
       },
     },
   });
@@ -60,34 +66,43 @@ const AssessmentCreationDialog = ({
       confirmChildren={<IconCheck />}
       disableConfirmButton={!enableSaveButton}
       confirmLoading={isSaving}
+      removeCloseButton={isRedirecting}
     >
       <div className="flex flex-col gap-1">
-        <h4>Seleção de praça</h4>
-        <LocationSelector
-          useAccordion
-          selectedLocation={selectedLocation}
-          onSelectedLocationChange={(v) => {
-            setSelectedLocation(v);
-          }}
-        />
-        <Divider />
-        <h4>Horário da avaliação</h4>
-        <CDateTimePicker
-          label="Data de início"
-          name="startDate"
-          value={selectedDateTime}
-          onChange={(e) => {
-            setSelectedDateTime(e);
-          }}
-        />
-        <Divider />
-        <h4>Seleção de formulário</h4>
-        <FormsDataGrid
-          selectedForm={selectedForm}
-          handleSelectForm={(id) => {
-            setSelectedForm({ id });
-          }}
-        />
+        {isRedirecting ?
+          <div className="flex w-full flex-col justify-center text-lg">
+            <LinearProgress />
+            Redirecionando...
+          </div>
+        : <>
+            <h4>Seleção de praça</h4>
+            <LocationSelector
+              useAccordion
+              selectedLocation={selectedLocation}
+              onSelectedLocationChange={(v) => {
+                setSelectedLocation(v);
+              }}
+            />
+            <Divider />
+            <h4>Horário da avaliação</h4>
+            <CDateTimePicker
+              label="Data de início"
+              name="startDate"
+              value={selectedDateTime}
+              onChange={(e) => {
+                setSelectedDateTime(e);
+              }}
+            />
+            <Divider />
+            <h4>Seleção de formulário</h4>
+            <FormsDataGrid
+              selectedForm={selectedForm}
+              handleSelectForm={(id) => {
+                setSelectedForm({ id });
+              }}
+            />
+          </>
+        }
       </div>
     </CDialog>
   );

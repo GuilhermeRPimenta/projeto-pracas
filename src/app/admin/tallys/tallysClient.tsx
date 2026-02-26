@@ -6,7 +6,7 @@ import TallysList from "@/app/admin/tallys/tallysList";
 import { useFetchTallys } from "@/lib/serverFunctions/apiCalls/tally";
 import { FetchTallysResponse } from "@/lib/serverFunctions/queries/tally";
 import { IconFilter, IconPlus } from "@tabler/icons-react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Suspense,
   useCallback,
@@ -38,7 +38,9 @@ const TallysClient = ({
 }: {
   usersPromise: Promise<{ id: string; username: string }[]>;
 }) => {
-  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [params] = useState(useSearchParams());
   const lastFetchedLocationId = useRef<number | undefined>(undefined);
   const [isMobileView, setIsMobileView] = useState<boolean>(true);
   const [tallys, setTallys] = useState<FetchTallysResponse["tallys"]>([]);
@@ -244,6 +246,10 @@ const TallysClient = ({
     };
   }, []);
 
+  useEffect(() => {
+    router.replace(pathname);
+  }, []);
+
   const totalFilters = useMemo(() => {
     let total = 0;
     if (locationId) total++;
@@ -324,9 +330,6 @@ const TallysClient = ({
         open={openTallyCreationDialog}
         onClose={() => {
           setOpenTallyCreationDialog(false);
-        }}
-        reloadTallys={() => {
-          void fetchTallys({ forceFetch: true });
         }}
       />
     </div>

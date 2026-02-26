@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     const assessments = await fetchAssessments(params);
     return new Response(JSON.stringify(assessments), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "private, max-age=5",
+      },
     });
   } catch (error) {
     return new Response("Error fetching assessments", { status: 500 });

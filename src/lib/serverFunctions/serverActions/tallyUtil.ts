@@ -67,11 +67,14 @@ export const _createTallyV2 = async (
     const userId = z.string().parse(session.user.id);
     const startDate = z.coerce.date().parse(formData.get("startDate"));
     try {
-      await prisma.tally.create({
+      const tally = await prisma.tally.create({
         data: {
           startDate: new Date(startDate),
           user: { connect: { id: userId } },
           location: { connect: { id: Number(locationId) } },
+        },
+        select: {
+          id: true,
         },
       });
       revalidateTag("tally");
@@ -81,6 +84,9 @@ export const _createTallyV2 = async (
           showSuccessCard: true,
           message: `Contagem criada!`,
         } as APIResponseInfo,
+        data: {
+          tallyId: tally.id,
+        },
       };
     } catch (error) {
       return {

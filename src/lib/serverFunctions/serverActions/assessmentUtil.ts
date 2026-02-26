@@ -116,12 +116,15 @@ const _createAssessmentV2 = async (
     const formId = z.coerce.number().parse(formData.get("formId"));
     const startDate = z.coerce.date().parse(formData.get("startDate"));
     try {
-      await prisma.assessment.create({
+      const assessment = await prisma.assessment.create({
         data: {
           startDate: new Date(startDate),
           user: { connect: { id: userId } },
           location: { connect: { id: Number(locationId) } },
           form: { connect: { id: Number(formId) } },
+        },
+        select: {
+          id: true,
         },
       });
       revalidateTag("assessemnt");
@@ -131,6 +134,9 @@ const _createAssessmentV2 = async (
           showSuccessCard: true,
           message: `Avaliação criada!`,
         } as APIResponseInfo,
+        data: {
+          assessmentId: assessment.id,
+        },
       };
     } catch (error) {
       return {
